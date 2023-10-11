@@ -1,4 +1,4 @@
-package com.example.project
+package com.example.assignment1
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.project.ui.theme.Assignment1Theme
+import com.example.assignment1.ui.theme.Assignment1Theme
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 

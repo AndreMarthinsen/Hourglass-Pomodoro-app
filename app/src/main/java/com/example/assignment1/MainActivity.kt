@@ -38,15 +38,20 @@ fun AppNavigation () {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
-        startDestination = Screen.InputScreen.route
+        startDestination = Screen.ActiveTimer.route
     ) {
         composable(
-            route = Screen.InputScreen.route
+            route = Screen.ActiveTimer.route
         ) {
             NavigationBar(navController)
         }
     }
 }
+
+
+
+
+
 
 
 

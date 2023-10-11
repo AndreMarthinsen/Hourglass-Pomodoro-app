@@ -2,8 +2,11 @@ package com.example.assignment1
 
 
 sealed class Screen(val route: String) {
-    object InputScreen: Screen("input_screen")
-    object ConversionsScreen: Screen("conversions_screen")
+    object ActiveTimer: Screen("active_timer")
+    object Presets: Screen("presets")
+    object Edit: Screen("edit")
+
+    object Settings: Screen("settings")
 
     fun withArgs(vararg args: String): String {
         return buildString {

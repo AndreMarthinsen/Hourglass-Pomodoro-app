@@ -14,10 +14,13 @@ import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.navigation.NavHostController
 
@@ -25,6 +28,7 @@ import androidx.navigation.NavHostController
 @Composable
 fun NavigationBar(controller: NavHostController) {
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.mediumTopAppBarColors(
@@ -35,34 +39,20 @@ fun NavigationBar(controller: NavHostController) {
                     IconButton(
                         onClick = {},
                         content = {
-                            Icon(Icons.Filled.Edit, "")
+                            Icon(Icons.Filled.Menu, "")
                         }
                     )},
                 title = {
                     Text("")
                 },
                 actions = {
-                    IconButton(onClick = { /* do something */ }) {
-                        Icon(Icons.Filled.Check, contentDescription = "Localized description")
-                    }
-                    IconButton(onClick = { /* do something */ }) {
+                    IconButton(onClick = { controller.navigate(Screen.Settings.route) }) {
                         Icon(
-                            Icons.Filled.Edit,
+                            Icons.Filled.Settings,
                             contentDescription = "Localized description",
                         )
                     }
-                    IconButton(onClick = { /* do something */ }) {
-                        Icon(
-                            Icons.Filled.AddCircle,
-                            contentDescription = "Localized description",
-                        )
-                    }
-                    IconButton(onClick = { /* do something */ }) {
-                        Icon(
-                            Icons.Filled.Build,
-                            contentDescription = "Localized description",
-                        )
-                    }
+                    // IconButton( etc
                 },
             )
         },

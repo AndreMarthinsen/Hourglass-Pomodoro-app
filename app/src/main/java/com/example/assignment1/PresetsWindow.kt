@@ -24,6 +24,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
+//import com.example.assignment1.data.PresetViewModel
 
 
 /**
@@ -32,8 +33,11 @@ import androidx.compose.ui.unit.dp
  * with that particular preset, edit the preset, delete the preset, as well as
  * adding a new preset.
  */
+/*
 @Composable
-fun PresetsWindow() {
+fun PresetsWindow(
+    //viewModel: PresetViewModel,
+) {
 
 }
 
@@ -128,3 +132,4 @@ fun PresetDisplay(
     }
 
 }
+*/

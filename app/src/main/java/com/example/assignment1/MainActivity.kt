@@ -1,5 +1,6 @@
 package com.example.assignment1
 
+import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -15,7 +16,8 @@ import androidx.navigation.compose.composable
 import com.example.assignment1.ui.theme.ProjectTheme
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-
+import com.example.assignment1.data.AppContainer
+import com.example.assignment1.data.AppDataContainer
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -26,14 +28,14 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    AppNavigation()
+                    PomodoroApp()
                 }
             }
         }
     }
 }
 
-
+/*
 @Composable
 fun AppNavigation () {
     val navController = rememberNavController()
@@ -46,10 +48,14 @@ fun AppNavigation () {
         ) {
             NavigationBar(navController)
         }
+        composable(
+            route = Screen.Presets.route
+        ) {
+            NavigationBar(navController)
+        }
     }
 }
-
-
+*/
 
 
 

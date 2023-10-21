@@ -9,6 +9,10 @@ interface PresetRepository {
     fun getAllPresetsStream(): Flow<List<Preset>>
 
     /**
+     * Get a preset from data source by ID
+     */
+    fun getPresetStream(id: Int): Flow<Preset?>
+    /**
      * Insert a preset into the data source
      */
     suspend fun insertPreset(preset: Preset)

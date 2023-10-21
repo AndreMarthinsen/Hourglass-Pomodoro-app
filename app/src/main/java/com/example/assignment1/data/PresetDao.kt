@@ -22,4 +22,7 @@ interface PresetDao {
 
     @Query("SELECT * from presets ORDER BY name ASC")
     fun getAllPresets(): Flow<List<Preset>>
+
+    @Query("SELECT * from presets WHERE id = :id")
+    fun getPreset(id: Int): Flow<Preset>
 }

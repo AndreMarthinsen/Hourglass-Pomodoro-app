@@ -35,31 +35,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-/*
-@Composable
-fun AppNavigation () {
-    val navController = rememberNavController()
-    NavHost(
-        navController = navController,
-        startDestination = Screen.ActiveTimer.route
-    ) {
-        composable(
-            route = Screen.ActiveTimer.route
-        ) {
-            NavigationBar(navController)
-        }
-        composable(
-            route = Screen.Presets.route
-        ) {
-            NavigationBar(navController)
-        }
-    }
-}
-*/
-
-
-
-
 
 
 

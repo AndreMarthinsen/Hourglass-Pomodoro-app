@@ -13,19 +13,18 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.mutableStateOf
 import com.example.assignment1.ui.theme.ProjectTheme
 import com.example.assignment1.services.TimerService
-import com.example.assignment1.ui.preset.TimerScreen
+import androidx.navigation.compose.rememberNavController
 
 
 @ExperimentalAnimationApi
 class MainActivity : ComponentActivity() {
 
     private var isBound = mutableStateOf(false)
-    private lateinit var stopwatchService: TimerService
-
+    private lateinit var timerService: TimerService
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
             val binder = service as TimerService.TimerBinder
-            stopwatchService = binder.getService()
+            timerService = binder.getService()
             isBound.value = true
         }
 
@@ -41,9 +40,10 @@ class MainActivity : ComponentActivity() {
         }
         setContent {
             ProjectTheme {
+                val navController = rememberNavController()
                 Surface {
                     if(isBound.value) {
-                        TimerScreen(timerService = stopwatchService)
+                        PomodoroApp(navController, timerService)
                     }
                 }
             }

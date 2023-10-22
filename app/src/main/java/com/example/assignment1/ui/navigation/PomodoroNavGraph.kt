@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.NavHostController
+import com.example.assignment1.services.TimerService
 import com.example.assignment1.ui.preset.ActivePresetDestination
 import com.example.assignment1.ui.preset.ActiveTimerScreen
 import com.example.assignment1.ui.preset.PresetEditDestination
@@ -18,15 +19,17 @@ import com.example.assignment1.ui.settings.SettingsScreen
 fun PomodoroNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
+    timerService: TimerService
 ) {
     NavHost(
         navController = navController,
-        startDestination = PresetsDestination.route,
+        startDestination = ActivePresetDestination.route,
         modifier = modifier
     ) {
         composable(route = ActivePresetDestination.route) {
             ActiveTimerScreen(
-                navigateBack = { navController.popBackStack() }
+                navigateBack = { navController.popBackStack() },
+                timerService = timerService
             )
         }
         composable(route = PresetEditDestination.route) {

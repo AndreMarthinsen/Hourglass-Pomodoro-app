@@ -13,11 +13,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.example.assignment1.services.TimerService
 import com.example.assignment1.ui.navigation.PomodoroNavHost
 
 @Composable
-fun PomodoroApp(navController: NavHostController = rememberNavController()) {
-    PomodoroNavHost(navController = navController)
+fun PomodoroApp(
+    navController: NavHostController = rememberNavController(),
+    timerService: TimerService
+) {
+    PomodoroNavHost(
+        navController = navController,
+        timerService = timerService
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

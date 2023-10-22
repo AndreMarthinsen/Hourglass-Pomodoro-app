@@ -82,7 +82,8 @@ object ActivePresetDestination : NavigationDestination {
 @Composable
 fun ActiveTimerScreen(
     navigateBack: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    timerService: TimerService
 ) {
     Scaffold(
         topBar = {
@@ -94,20 +95,15 @@ fun ActiveTimerScreen(
     ) {
         innerPadding ->
         ActiveTimerBody(
-            modifer = modifier
-                .padding(innerPadding)
+            modifier = modifier
+                .padding(innerPadding),
+            timerService = timerService
         )
     }
 }
 
 @Composable
-fun ActiveTimerBody(modifer: Modifier = Modifier) {
-
-}
-
-
-@Composable
-fun TimerScreen(timerService: TimerService) {
+fun ActiveTimerBody(modifier: Modifier = Modifier, timerService: TimerService) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -238,3 +234,4 @@ fun TimerScreen(timerService: TimerService) {
         }
     }
 }
+

@@ -1,37 +1,60 @@
 package com.example.assignment1
 
-import android.app.Application
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
 import android.os.Bundle
+import android.os.IBinder
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
+import androidx.compose.runtime.mutableStateOf
 import com.example.assignment1.ui.theme.ProjectTheme
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
-import com.example.assignment1.data.AppContainer
-import com.example.assignment1.data.AppDataContainer
+import com.example.assignment1.services.TimerService
+import com.example.assignment1.ui.preset.TimerScreen
 
+
+@ExperimentalAnimationApi
 class MainActivity : ComponentActivity() {
+
+    private var isBound = mutableStateOf(false)
+    private lateinit var stopwatchService: TimerService
+
+    private val connection = object : ServiceConnection {
+        override fun onServiceConnected(className: ComponentName, service: IBinder) {
+            val binder = service as TimerService.TimerBinder
+            stopwatchService = binder.getService()
+            isBound.value = true
+        }
+
+        override fun onServiceDisconnected(arg0: ComponentName) {
+            isBound.value = false
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Intent(this, TimerService::class.java).also { intent ->
+            bindService(intent, connection, Context.BIND_AUTO_CREATE)
+        }
         setContent {
             ProjectTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    PomodoroApp()
+                Surface {
+                    if(isBound.value) {
+                        TimerScreen(timerService = stopwatchService)
+                    }
                 }
             }
+
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unbindService(connection)
+        isBound.value = false
     }
 }
 

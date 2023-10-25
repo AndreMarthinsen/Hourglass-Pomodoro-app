@@ -135,10 +135,8 @@ fun ActiveTimerBody(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("$isBreak")
-        Row(
-            Modifier.background( if(isBreak) {Color.Red} else {Color.Red} )
-        ) {
+        Text(if(isBreak){"break"}else{"focus"})
+        Row() {
             Text("${viewModel.elapsedRounds.intValue} / ${viewModel.loadedPreset.roundsInSession}")
             Spacer(Modifier.width(100.dp))
             Text("${viewModel.elapsedSessions.intValue} / ${viewModel.loadedPreset.totalSessions}")

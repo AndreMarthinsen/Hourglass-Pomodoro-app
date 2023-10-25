@@ -161,6 +161,7 @@ class ActiveTimerViewModel() : ViewModel() {
         elapsedRounds.intValue = 0
         elapsedSessions.intValue = 0
         finishedPreset.value = false
+        isBreak.value = false
         setup()
     }
 

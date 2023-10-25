@@ -34,6 +34,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
@@ -96,7 +97,6 @@ fun ActiveTimerScreen(
 }
 
 
-
 @Composable
 fun ActiveTimerBody(
     viewModel: ActiveTimerViewModel,
@@ -124,6 +124,7 @@ fun ActiveTimerBody(
     val minutes by viewModel.minutes
     val seconds by viewModel.seconds
     val timerState by viewModel.currentState
+    val isBreak by viewModel.isBreak
 
 
     Column(
@@ -134,14 +135,17 @@ fun ActiveTimerBody(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Row() {
+        Text("$isBreak")
+        Row(
+            Modifier.background( if(isBreak) {Color.Red} else {Color.Red} )
+        ) {
             Text("${viewModel.elapsedRounds.intValue} / ${viewModel.loadedPreset.roundsInSession}")
             Spacer(Modifier.width(100.dp))
             Text("${viewModel.elapsedSessions.intValue} / ${viewModel.loadedPreset.totalSessions}")
         }
 
         TimerDisplay(hours, minutes, seconds)
-        TimerAdjustmentBar(
+        TimerAdjustmentBar (
             scrollState = scrollState,
             onDragEnd = { timerAdjustmentTick = 0.0f },
             onAdjustment = { adjustment ->
@@ -157,8 +161,7 @@ fun ActiveTimerBody(
                         )
                     }
                 }
-            }
-        )
+            })
         Spacer(Modifier.height(30.dp))
         Column(
             horizontalAlignment = Alignment.CenterHorizontally

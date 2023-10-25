@@ -8,6 +8,11 @@ import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
+/**
+ * The Database Access Object that defines interaction with the preset-database
+ * insert, update and delete are built-in functions
+ * getAll and getPreset run manually defined SQL-queries
+ */
 @Dao
 interface PresetDao {
     //In the case of an insert-conflict, the new item is ignored

@@ -5,6 +5,10 @@ import androidx.room.Room
 import androidx.room.Database
 import androidx.room.RoomDatabase
 
+/**
+ * The Room-database implementation, currently offline and hosted locally on a device
+ * If the preset-class is changed (e.g., by adding a member or function), version-int must be incremented
+ */
 @Database(entities = [Preset::class], version = 1, exportSchema = false)
 abstract class PresetDatabase : RoomDatabase() {
 

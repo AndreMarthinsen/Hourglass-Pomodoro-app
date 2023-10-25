@@ -129,7 +129,7 @@ private fun PresetDisplay(
                 Icons.Filled.Face,
                 "Timer Icon"
             )
-            Text(preset.name)
+            Text(preset.name + " : " + preset.totalLength + "mins")
             IconButton(
                 enabled = true,
                 onClick = onExpandInteraction,

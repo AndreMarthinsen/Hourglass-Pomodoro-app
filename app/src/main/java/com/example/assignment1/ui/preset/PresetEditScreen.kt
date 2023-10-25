@@ -28,6 +28,9 @@ object PresetEditDestination : NavigationDestination {
     val routeWithArgs = "$route/{$presetIdArg}"
 }
 
+/**
+ * Screen of for entering new presets
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PresetEditScreen(
@@ -136,6 +139,15 @@ fun PresetEntryForm(
             onValueChange = { onValueChange(presetDetails.copy(breakLength = it)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             label = { Text("Break length")},
+            modifier = Modifier.fillMaxWidth(),
+            enabled = enabled,
+            singleLine = true
+        )
+        OutlinedTextField(
+            value = presetDetails.longBreakLength,
+            onValueChange = { onValueChange(presetDetails.copy(longBreakLength = it)) },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            label = { Text("longBreakLength")},
             modifier = Modifier.fillMaxWidth(),
             enabled = enabled,
             singleLine = true

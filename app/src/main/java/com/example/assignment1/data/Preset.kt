@@ -21,10 +21,4 @@ data class Preset (
     val focusLength: Int,
     val breakLength: Int,
     val longBreakLength: Int,
-) {
-    val totalLength: Int
-            get() =
-                ((focusLength * totalSessions) +
-                (breakLength * (totalSessions - 1) +
-                longBreakLength)) * roundLength
-}
+)

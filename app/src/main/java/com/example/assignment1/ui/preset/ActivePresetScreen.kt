@@ -117,6 +117,7 @@ class ActiveTimerViewModel(val timerService: TimerService) : ViewModel() {
         totalSessions = 2,
         focusLength = 3,
         breakLength = 1,
+        longBreakLength = 3
     )
 
     var onTickEvent: () -> Unit = {}

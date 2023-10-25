@@ -10,9 +10,6 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 
-fun formatTime(hours: String, minutes: String, seconds: String): String {
-    return "$hours:$minutes:$seconds"
-}
 
 fun formatDurationDifference(targetDuration: Duration, elapsedDuration: Duration) : String {
     return (targetDuration - elapsedDuration).toComponents { hours, minutes, seconds, _ ->

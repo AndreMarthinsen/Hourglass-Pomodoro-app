@@ -29,7 +29,7 @@ class PresetEditViewModel(
         if (validateInput()) {
             presetRepository.insertPreset(presetUiState.presetDetails.toPreset())
         }
-     }
+    }
 
     private fun validateInput(uiState: PresetDetails = presetUiState.presetDetails): Boolean {
         return with(uiState) {

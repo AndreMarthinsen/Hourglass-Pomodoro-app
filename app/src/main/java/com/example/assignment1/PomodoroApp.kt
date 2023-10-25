@@ -21,7 +21,7 @@ fun PomodoroApp(
     navController: NavHostController = rememberNavController(),
     timerService: TimerService
 ) {
-    PomodoroNavHost(
+    PomodoroNavHost (
         navController = navController,
         timerService = timerService
     )

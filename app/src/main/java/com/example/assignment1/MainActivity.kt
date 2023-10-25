@@ -14,6 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import com.example.assignment1.ui.theme.ProjectTheme
 import com.example.assignment1.services.TimerService
 import androidx.navigation.compose.rememberNavController
+import com.example.assignment1.ui.navigation.PomodoroNavHost
 
 
 @ExperimentalAnimationApi
@@ -43,7 +44,10 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 Surface {
                     if(isBound.value) {
-                        PomodoroApp(navController, timerService)
+                        PomodoroNavHost(
+                            timerService = timerService,
+                            navController = navController
+                        )
                     }
                 }
             }

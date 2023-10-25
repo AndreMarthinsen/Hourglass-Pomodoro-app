@@ -50,6 +50,7 @@ import com.example.assignment1.ui.navigation.NavigationDestination
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 
@@ -116,6 +117,7 @@ class ActiveTimerViewModel(val timerService: TimerService) : ViewModel() {
         totalSessions = 2,
         focusLength = 3,
         breakLength = 1,
+        longBreakLength = 3
     )
 
     var onTickEvent: () -> Unit = {}
@@ -143,8 +145,7 @@ class ActiveTimerViewModel(val timerService: TimerService) : ViewModel() {
             loadedPreset.focusLength.minutes
         } else {
             if(Math.floorMod(elapsedRounds.intValue, loadedPreset.roundLength) == 0) {
-                // TODO: Long break
-                100.minutes
+                loadedPreset.longBreakLength.minutes
             } else {
                 loadedPreset.breakLength.minutes
             }

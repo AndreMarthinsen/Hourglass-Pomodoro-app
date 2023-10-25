@@ -1,5 +1,6 @@
 package com.example.assignment1.ui.preset
 
+import android.app.Application
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -27,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -38,13 +40,17 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import com.example.assignment1.PomodoroTopAppBar
 import com.example.assignment1.R
+import com.example.assignment1.data.Preset
 import com.example.assignment1.services.TimerService
 import com.example.assignment1.ui.navigation.NavigationDestination
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 
 
@@ -95,9 +101,107 @@ fun ActiveTimerScreen(
     }
 }
 
+class MyViewModelFactory(private val mApplication: Application, private val mParam: String) : ViewModelProvider.Factory {
+
+
+}
+
+
+
+class ActiveTimerViewModel(val timerService: TimerService) : ViewModel() {
+    private val defaultPreset = Preset(
+        id = 0,
+        name = "default",
+        roundLength = 3,
+        totalSessions = 2,
+        focusLength = 3,
+        breakLength = 1,
+    )
+
+    var onTickEvent: () -> Unit = {}
+    var onTimerFinished: () -> Unit = {}
+
+    private var loadedPreset = defaultPreset
+
+    var presetName = mutableStateOf( loadedPreset.name )
+        private set
+    var elapsedRounds =  mutableIntStateOf(0 )
+        private set
+    var elapsedSessions = mutableIntStateOf( 0 )
+        private set
+    var finishedPreset = mutableStateOf( false )
+        private set
+    private var hasSkipped = false
+
+    // For exposing the current timer start length
+    var currentTimerLength = mutableStateOf( 0.seconds )
+
+    private var isBreak = false;
+
+    fun start () {
+        timerService.currentTimeInSeconds.value = if (!isBreak) {
+            loadedPreset.focusLength.minutes
+        } else {
+            if(Math.floorMod(elapsedRounds.intValue, loadedPreset.roundLength) == 0) {
+                // TODO: Long break
+                100.minutes
+            } else {
+                loadedPreset.breakLength.minutes
+            }
+        }
+        timerService.start(
+            onTickEvent = {
+                this.currentTimerLength.value = timerService.currentTimeInSeconds.value
+                onTickEvent()
+            },
+            onTimerFinish = {
+                onTimerFinished()
+                timerService.end()
+                this.updateProgress()
+                if(!this.finishedPreset.value) {
+                    start()
+                }
+            }
+        )
+    }
+
+
+    private fun updateProgress() {
+        if(isBreak) {
+            this.elapsedRounds.intValue += 1
+        }
+        if(Math.floorMod(elapsedRounds.intValue, loadedPreset.roundLength)==0) {
+            this.elapsedSessions.intValue += 1
+        }
+        if(this.elapsedSessions.intValue == loadedPreset.totalSessions) {
+            finishedPreset.value = true
+        }
+    }
+
+    fun skip() {
+        isBreak = !isBreak
+        hasSkipped = true
+        updateProgress()
+    }
+
+    fun end() {
+        finishedPreset.value = true;
+    }
+
+    fun reset() {
+        elapsedRounds.intValue = 0;
+        elapsedSessions.intValue = 0;
+    }
+
+
+}
 
 @Composable
-fun ActiveTimerBody(modifier: Modifier = Modifier, timerService: TimerService) {
+fun ActiveTimerBody(
+    //viewModel: ActiveTimerViewModel,
+    modifier: Modifier = Modifier,
+    timerService: TimerService
+) {
     val scrollScope = rememberCoroutineScope()
     val scrollState = rememberScrollState(
         timerService.currentTimeInSeconds.value.absoluteValue.toInt(DurationUnit.SECONDS)

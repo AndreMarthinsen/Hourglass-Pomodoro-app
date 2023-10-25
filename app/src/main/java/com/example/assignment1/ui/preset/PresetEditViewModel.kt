@@ -53,6 +53,7 @@ data class PresetDetails(
     val totalSessions: String = "",
     val focusLength: String = "",
     val breakLength: String = "",
+    val longBreakLength: String = ""
 )
 
 //TODO: check if explicitly initializing fields is necessary
@@ -62,7 +63,8 @@ fun PresetDetails.toPreset() : Preset = Preset(
     roundLength = roundLength.toInt()?: 0,
     totalSessions = totalSessions.toInt()?: 0,
     focusLength = focusLength.toInt()?: 0,
-    breakLength = breakLength.toInt()?: 0
+    breakLength = breakLength.toInt()?: 0,
+    longBreakLength = longBreakLength.toInt()?: 0
 )
 
 fun Preset.toPresetUiState(isEntryValid: Boolean = false): PresetUiState = PresetUiState(
@@ -76,5 +78,6 @@ fun Preset.toPresetDetails(): PresetDetails = PresetDetails(
     roundLength = roundLength.toString(),
     totalSessions = totalSessions.toString(),
     focusLength = focusLength.toString(),
-    breakLength = breakLength.toString()
+    breakLength = breakLength.toString(),
+    longBreakLength = longBreakLength.toString(),
 )

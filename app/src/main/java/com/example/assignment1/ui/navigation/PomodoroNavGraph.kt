@@ -15,14 +15,6 @@ import com.example.assignment1.ui.preset.PresetsScreen
 import com.example.assignment1.ui.settings.SettingsDestination
 import com.example.assignment1.ui.settings.SettingsScreen
 
-/**
- * The application's mavhost, describing and facilitating navigation
- * Every navigation destination (every distinct screen) is listed here
- *
- * @param navController - the navigation controller, tracks navigation state
- * @param modifier - standard modifier-object
- * @param timerService - object used for time-tracking in ActivePresetScreen, see TimerService.kt
- */
 @Composable
 fun PomodoroNavHost(
     navController: NavHostController,
@@ -34,14 +26,9 @@ fun PomodoroNavHost(
         startDestination = ActivePresetDestination.route,
         modifier = modifier
     ) {
-        /**
-         * the navigateBack-params provide a callback for the back-button on the various screens
-         * in our case it tells the navController to return to the previous item on the navstack
-         */
         composable(route = ActivePresetDestination.route) {
             ActiveTimerScreen(
-                navigateBack = { /*navController.popBackStack()*/
-                    navController.navigate(PresetsDestination.route) },
+                navigateBack = { navController.popBackStack() },
                 timerService = timerService
             )
         }

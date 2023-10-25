@@ -16,7 +16,7 @@ data class Preset (
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     val name: String,
-    val roundLength: Int,
+    val roundsInSession: Int,
     val totalSessions: Int,
     val focusLength: Int,
     val breakLength: Int,

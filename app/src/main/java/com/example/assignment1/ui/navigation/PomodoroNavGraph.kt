@@ -1,13 +1,16 @@
 package com.example.assignment1.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.NavHostController
 import com.example.assignment1.services.TimerService
 import com.example.assignment1.ui.preset.ActivePresetDestination
 import com.example.assignment1.ui.preset.ActiveTimerScreen
+import com.example.assignment1.ui.preset.ActiveTimerViewModel
 import com.example.assignment1.ui.preset.PresetEditDestination
 import com.example.assignment1.ui.preset.PresetEditScreen
 import com.example.assignment1.ui.preset.PresetsDestination
@@ -27,9 +30,14 @@ fun PomodoroNavHost(
         modifier = modifier
     ) {
         composable(route = ActivePresetDestination.route) {
+            val parentEntry = remember(it){
+                navController.getBackStackEntry(ActivePresetDestination.route)
+            }
+            val parentViewModel = viewModel<ActiveTimerViewModel>(parentEntry)
+            parentViewModel.timerService = timerService
             ActiveTimerScreen(
                 navigateBack = { navController.popBackStack() },
-                timerService = timerService
+                viewModel = parentViewModel
             )
         }
         composable(route = PresetEditDestination.route) {

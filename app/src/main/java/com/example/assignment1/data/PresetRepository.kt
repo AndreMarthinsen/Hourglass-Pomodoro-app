@@ -2,6 +2,9 @@ package com.example.assignment1.data
 
 import kotlinx.coroutines.flow.Flow
 
+/**
+ * Interface that declares methods for interacting with database
+ */
 interface PresetRepository {
     /**
      * Retrieve all presets from the given data source

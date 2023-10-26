@@ -2,19 +2,14 @@ package com.example.assignment1.ui.preset
 
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.hoverable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.width
@@ -32,15 +27,12 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -50,7 +42,6 @@ import com.example.assignment1.R
 import com.example.assignment1.services.TimerService
 import com.example.assignment1.ui.navigation.NavigationDestination
 import kotlinx.coroutines.launch
-import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
@@ -127,9 +118,7 @@ fun ActiveTimerBody(
 ) {
 
     val scrollScope = rememberCoroutineScope()
-    val scrollState = rememberScrollState(
-        0//viewModel.currentTimerLength.value.toInt(DurationUnit.SECONDS)
-    )
+    val scrollState = rememberScrollState(0)
     viewModel.onTickEvent = {
         if(!scrollState.isScrollInProgress) {
             scrollScope.launch {
@@ -143,7 +132,6 @@ fun ActiveTimerBody(
         }
     }
 
-    var isSyncing by remember { mutableStateOf(false ) }
     viewModel.onSync = {
         scrollScope.launch {
             scrollState.animateScrollTo(
@@ -167,26 +155,27 @@ fun ActiveTimerBody(
     val isBreak by viewModel.isBreak
 
 
-    var scrollEvent by remember { mutableStateOf(false) }
+    var scrollEventToHandle by remember { mutableStateOf(false) }
 
 
     //TODO: This prevents thread problems, but might want a better solution
     if(scrollState.isScrollInProgress) {
-        if(!isSyncing) {
-            if (!scrollEvent) {
-                viewModel.pause()
-            }
-            viewModel.currentTimerLength.value = getDurationFromScroll(
-                scrollState, 90.minutes, 60
-            )
+        if (!scrollEventToHandle) {
+            viewModel.pause()
         }
-        scrollEvent = true
-    } else if (scrollEvent) {
-        scrollEvent = false
-        if (!isSyncing) {
+        viewModel.currentTimerLength.value = getDurationFromScroll(
+            scrollState, 90.minutes, 60
+        )
+        scrollEventToHandle = true
+    } else if (scrollEventToHandle) {
+        scrollEventToHandle = false
+        if(scrollState.value != getScrollFromDuration(
+                viewModel.currentTimerLength.value,
+                90.minutes,
+                scrollState.maxValue, null
+            )) {
             viewModel.sync()
         }
-        isSyncing = !isSyncing
     }
 
 

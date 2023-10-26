@@ -46,6 +46,7 @@ class ActiveTimerViewModel() : ViewModel() {
 
     var onTickEvent: () -> Unit = {}
     var onTimerFinished: () -> Unit = {}
+    var onSync: () -> Unit = {}
 
     var loadedPreset = defaultPreset
         private set
@@ -131,11 +132,13 @@ class ActiveTimerViewModel() : ViewModel() {
     }
 
     fun refresh() {
+        updateTimeUnits()
         if(!isSetup) {
             setup()
+            refresh()
+            sync()
             isSetup = true
         }
-        updateTimeUnits()
     }
 
     fun skip() {
@@ -173,6 +176,10 @@ class ActiveTimerViewModel() : ViewModel() {
 
     fun pause() {
         timerService.pause()
+    }
+
+    fun sync() {
+        onSync()
     }
 
 

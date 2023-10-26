@@ -4,6 +4,8 @@ import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +20,8 @@ import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -29,6 +33,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -46,6 +51,10 @@ import com.example.assignment1.services.TimerService
 import com.example.assignment1.ui.navigation.NavigationDestination
 import kotlinx.coroutines.launch
 import kotlin.math.abs
+import kotlin.math.roundToInt
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 
 
@@ -96,29 +105,60 @@ fun ActiveTimerScreen(
     }
 }
 
+fun getScrollFromDuration(time: Duration, maxTime: Duration, maxScroll: Int, roundingInSeconds: Int?) : Int {
+    return if(roundingInSeconds != null) {
+        ((time.toInt(DurationUnit.SECONDS).toFloat() /
+                maxTime.toInt(DurationUnit.SECONDS).toFloat()*maxScroll) / roundingInSeconds).toInt()*roundingInSeconds
+    } else {
+        ((time.toInt(DurationUnit.SECONDS).toFloat() /
+                maxTime.toInt(DurationUnit.SECONDS).toFloat()*maxScroll)).toInt()
+    }
+}
+
+fun getDurationFromScroll(scrollState: ScrollState, maxDuration: Duration, roundingInSeconds: Int) : Duration {
+    return ((((scrollState.value.toFloat() / scrollState.maxValue.toFloat()) * maxDuration.toInt(DurationUnit.SECONDS))/roundingInSeconds).roundToInt()*roundingInSeconds).seconds
+}
+
 
 @Composable
 fun ActiveTimerBody(
     viewModel: ActiveTimerViewModel,
     modifier: Modifier = Modifier
 ) {
-    viewModel.refresh()
+
     val scrollScope = rememberCoroutineScope()
     val scrollState = rememberScrollState(
-        viewModel.currentTimerLength.value.toInt(DurationUnit.SECONDS)
+        0//viewModel.currentTimerLength.value.toInt(DurationUnit.SECONDS)
     )
-
     viewModel.onTickEvent = {
-        scrollScope.launch {
-            scrollState.animateScrollTo(
-                viewModel.currentTimerLength.value.toInt(DurationUnit.SECONDS),
-            )
+        if(!scrollState.isScrollInProgress) {
+            scrollScope.launch {
+                scrollState.scrollTo(
+                    getScrollFromDuration(
+                        viewModel.currentTimerLength.value,
+                        90.minutes,
+                        scrollState.maxValue, null
+                    ))
+            }
         }
     }
+
+    var isSyncing by remember { mutableStateOf(false ) }
+    viewModel.onSync = {
+        scrollScope.launch {
+            scrollState.animateScrollTo(
+                getScrollFromDuration(
+                    viewModel.currentTimerLength.value,
+                    90.minutes,
+                    scrollState.maxValue, null
+                ))
+        }
+    }
+
     viewModel.onTimerFinished = {}
 
-    val timerAdjustCoefficient = 0.01f
-    var timerAdjustmentTick by remember { mutableFloatStateOf(0.0f) }
+    viewModel.refresh()
+
 
     val hours by viewModel.hours
     val minutes by viewModel.minutes
@@ -126,6 +166,31 @@ fun ActiveTimerBody(
     val timerState by viewModel.currentState
     val isBreak by viewModel.isBreak
 
+
+    var scrollEvent by remember { mutableStateOf(false) }
+
+
+    //TODO: This prevents thread problems, but might want a better solution
+    if(scrollState.isScrollInProgress) {
+        if(!isSyncing) {
+            if (!scrollEvent) {
+                viewModel.pause()
+            }
+            viewModel.currentTimerLength.value = getDurationFromScroll(
+                scrollState, 90.minutes, 60
+            )
+        }
+        scrollEvent = true
+    } else if (scrollEvent) {
+        scrollEvent = false
+        if (!isSyncing) {
+            viewModel.sync()
+        }
+        isSyncing = !isSyncing
+    }
+
+
+    viewModel.refresh()
 
     Column(
         modifier = Modifier
@@ -135,7 +200,14 @@ fun ActiveTimerBody(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(if(isBreak){"break"}else{"focus"})
+        // debug
+//        Column() {
+//            Text("scrollEvent:$scrollEvent  syncEvent: $isSyncing")
+//            Text("${viewModel.currentTimerLength.value.toInt(DurationUnit.SECONDS).toFloat() /
+//                    90.minutes.toInt(DurationUnit.SECONDS).toFloat()}")
+//            Text("${scrollState.value.toFloat() / scrollState.maxValue.toFloat()}")
+//            Text(if(isBreak){"break"}else{"focus"})
+//        }
         Row() {
             Text("${viewModel.elapsedRounds.intValue} / ${viewModel.loadedPreset.roundsInSession}")
             Spacer(Modifier.width(100.dp))
@@ -143,23 +215,7 @@ fun ActiveTimerBody(
         }
 
         TimerDisplay(hours, minutes, seconds)
-        TimerAdjustmentBar (
-            scrollState = scrollState,
-            onDragEnd = { timerAdjustmentTick = 0.0f },
-            onAdjustment = { adjustment ->
-                timerAdjustmentTick += adjustment * timerAdjustCoefficient
-                if (abs(timerAdjustmentTick) > 1) {
-                    viewModel.adjustTime(timerAdjustmentTick.toInt() * -60)
-                    timerAdjustmentTick = 0.0f
-                    scrollScope.launch {
-                        scrollState.animateScrollTo(
-                            viewModel.currentTimerLength.value.toInt(
-                                DurationUnit.SECONDS
-                            )
-                        )
-                    }
-                }
-            })
+        TimerAdjustmentBar ( scrollState = scrollState )
         Spacer(Modifier.height(30.dp))
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
@@ -175,16 +231,21 @@ fun ActiveTimerBody(
                 enabled = timerState != TimerService.State.Idle && timerState != TimerService.State.Reset,
                 onReset = {
                     viewModel.reset()
+                    viewModel.sync()
                 },
                 size = 75.dp
             )
             Button(
-                onClick = { viewModel.skip()}
+                onClick = {
+                    viewModel.skip()
+                    viewModel.sync()
+                }
             ) {
                 Text("skip")
             }
         }
     }
+
 }
 
 
@@ -262,25 +323,13 @@ fun ResetButton(
 @Composable
 fun TimerAdjustmentBar (
     scrollState: ScrollState,
-    onDragEnd: () -> Unit,
-    onAdjustment: (adjustment: Float) -> Unit
 ) {
-    Box {
+    Column (
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(Icons.Filled.KeyboardArrowUp, "")
         MinuteMarkers( scrollState )
-        Box(
-            modifier = Modifier
-                .requiredWidth(300.dp)
-                .requiredHeight(50.dp)
-                .pointerInput(Unit) {
-                    detectDragGestures(
-                        onDragEnd = onDragEnd
-                    ) { _, dragAmount ->
-                        onAdjustment(dragAmount.x)
-                    }
-                }
-        ) {
-
-        }
+        Icon(Icons.Filled.KeyboardArrowDown, "")
     }
 }
 
@@ -290,27 +339,48 @@ fun TimerAdjustmentBar (
  */
 @Composable
 fun MinuteMarkers (
-    scrollState: ScrollState
+    scrollState: ScrollState,
 ) {
     Row(
         modifier = Modifier
             .requiredWidth(300.dp)
             .height(50.dp)
-            .horizontalScroll(scrollState),
+            .horizontalScroll(scrollState)
+           ,
         verticalAlignment = Alignment.CenterVertically
     ) {
+        val spacerWidth = 18.sp
+        Text(" ", fontSize = spacerWidth)
         repeat(20) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("  |  ", fontSize = 26.sp)
+                Row(){
+                    Text("  ", fontSize = spacerWidth)
+                    Text("|", fontSize = 26.sp)
+                    Text("  ", fontSize = spacerWidth)
+                }
+
                 if (it != 0) {
                     Text(((it-1)*5).toString(), fontSize = 14.sp)
                 } else {
                     Text("", fontSize = 14.sp)
                 }
             }
-            Text("  |    |    |    |  ", fontSize = 16.sp)
+            repeat(4) {
+                Text("  ", fontSize = spacerWidth)
+                Text("|", fontSize = 16.sp)
+                Text("  ", fontSize = spacerWidth)
+            }
+        }
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row() {
+                Text("  ", fontSize = spacerWidth)
+                Text("|", fontSize = 26.sp)
+                Text("   ", fontSize = spacerWidth)
+            }
         }
     }
 }

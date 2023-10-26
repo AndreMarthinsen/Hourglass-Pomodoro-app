@@ -45,11 +45,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
@@ -142,6 +145,16 @@ fun ActiveTimerBody(
     val scrollScope = rememberCoroutineScope()
     val lightScope = rememberCoroutineScope()
     val scrollState = rememberScrollState(0)
+    val currentLightColor = remember { Animatable(Color.DarkGray) }
+    val activeBreakLightColor = Color(130, 85, 255, 255)
+    val activeFocusLightColor = Color(255, 224, 70, 255)
+    val hours by viewModel.hours
+    val minutes by viewModel.minutes
+    val seconds by viewModel.seconds
+    val timerState by viewModel.currentState
+    val isBreak by viewModel.isBreak
+
+
     viewModel.onTickEvent = {
         if(!scrollState.isScrollInProgress) {
             scrollScope.launch {
@@ -166,19 +179,21 @@ fun ActiveTimerBody(
         }
     }
 
-    viewModel.onTimerFinished = {}
+    viewModel.onTimerFinished = {
+        lightScope.launch {
+            currentLightColor.animateTo(if (isBreak) {
+                activeBreakLightColor
+            } else {
+                activeFocusLightColor
+            }, tween(1000))
+        }
+    }
 
     viewModel.refresh()
 
 
-    val hours by viewModel.hours
-    val minutes by viewModel.minutes
-    val seconds by viewModel.seconds
-    val timerState by viewModel.currentState
-    val isBreak by viewModel.isBreak
-    val currentLightColor = remember { Animatable(Color.DarkGray) }
-    val activeBreakLightColor = Color(130, 85, 255, 255)
-    val activeFocusLightColor = Color(255, 224, 70, 255)
+
+
 
     var scrollEventToHandle by remember { mutableStateOf(false) }
 
@@ -362,7 +377,14 @@ fun TimerDisplay (
 ) {
     Text(
         text = "$hours:$minutes:$seconds",
-        fontSize = 68.sp,
+        style = TextStyle(
+            fontSize = 68.sp,
+            shadow = Shadow(
+                color = Color.White,
+//                offset = Offset(10f, 10f),
+                blurRadius =20f
+            )
+        ),
         modifier = Modifier.padding(0.dp)
     )
 }

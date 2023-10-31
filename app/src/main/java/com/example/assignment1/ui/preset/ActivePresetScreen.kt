@@ -2,8 +2,15 @@ package com.example.assignment1.ui.preset
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.Animatable
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.with
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -18,8 +25,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -45,6 +54,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.BlurredEdgeTreatment
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
@@ -72,6 +84,51 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 
+
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+fun AnimatedCounter(
+    count: String,
+    modifier: Modifier = Modifier,
+    style: TextStyle
+) {
+    var oldCount by remember {
+        mutableStateOf(count)
+    }
+    SideEffect {
+        oldCount = count
+    }
+    Row(modifier = modifier) {
+        val countString = count
+        val oldCountString = oldCount
+        for(i in countString.indices) {
+            val oldChar = oldCountString.getOrNull(i)
+            val newChar = countString[i]
+            val char = if(oldChar == newChar) {
+                oldCountString[i]
+            } else {
+                countString[i]
+            }
+            AnimatedContent(
+                targetState = char,
+                transitionSpec = {
+                    slideInVertically { -it } togetherWith slideOutVertically { it }
+                }, label = ""
+            ) { char ->
+                Text(
+                    text = char.toString(),
+                    style = style,
+                    softWrap = false
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun SideEffect(content: () -> Unit) {
+
+}
 
 /**
  * the navigation destination for the ActivePreset (active timer) screen
@@ -366,6 +423,38 @@ fun ActiveTimerBody(
 }
 
 
+@Composable
+fun NumberDisplay(
+    number: String,
+    style: TextStyle
+) {
+    Box(
+        modifier = Modifier
+            .background(
+                brush = Brush.linearGradient(
+                    colors = listOf(Color.Gray, Color.White, Color.Black),
+                    end = Offset(0.0f, 300f)
+                )
+            )
+            .border(
+                BorderStroke(
+                    2.dp,
+                    Brush.linearGradient(
+                        colors = listOf(Color.DarkGray, Color.White),
+                        start = Offset(0f, 0.0f),
+                        end = Offset(200f, 100f))
+                ),
+                RoundedCornerShape(2.dp)
+            )
+            .padding(horizontal = 2.dp)
+//            .shadow(5.dp)
+
+    ){
+        AnimatedCounter(count = number, style = style)
+    }
+}
+
+
 /**
  * Displays the current value of the timer.
  */
@@ -425,6 +514,15 @@ fun PlayPauseButton (
             contentDescription = "Play/Pause",
             modifier = Modifier
                 .requiredSize(size/2)
+                .blur(2.dp),
+            tint = Color.Black
+        )
+        Icon(
+            painter = icon,
+            contentDescription = "Play/Pause",
+            modifier = Modifier
+                .requiredSize(size/2),
+            tint = Color.LightGray
         )
     }
 }

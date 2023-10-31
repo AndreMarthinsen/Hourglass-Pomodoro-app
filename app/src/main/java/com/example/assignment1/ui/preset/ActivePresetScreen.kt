@@ -1,9 +1,20 @@
 package com.example.assignment1.ui.preset
 
-import android.app.Application
+import android.annotation.SuppressLint
+import androidx.compose.animation.Animatable
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.with
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,14 +22,22 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -26,34 +45,90 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.draw.BlurredEdgeTreatment
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.Typeface
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import com.example.assignment1.PomodoroTopAppBar
 import com.example.assignment1.R
-import com.example.assignment1.data.Preset
 import com.example.assignment1.services.TimerService
 import com.example.assignment1.ui.navigation.NavigationDestination
 import kotlinx.coroutines.launch
-import kotlin.math.abs
+import kotlin.math.roundToInt
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 
+
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+fun AnimatedCounter(
+    count: String,
+    modifier: Modifier = Modifier,
+    style: TextStyle
+) {
+    var oldCount by remember {
+        mutableStateOf(count)
+    }
+    SideEffect {
+        oldCount = count
+    }
+    Row(modifier = modifier) {
+        val countString = count
+        val oldCountString = oldCount
+        for(i in countString.indices) {
+            val oldChar = oldCountString.getOrNull(i)
+            val newChar = countString[i]
+            val char = if(oldChar == newChar) {
+                oldCountString[i]
+            } else {
+                countString[i]
+            }
+            AnimatedContent(
+                targetState = char,
+                transitionSpec = {
+                    slideInVertically { -it } togetherWith slideOutVertically { it }
+                }, label = ""
+            ) { char ->
+                Text(
+                    text = char.toString(),
+                    style = style,
+                    softWrap = false
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun SideEffect(content: () -> Unit) {
+
+}
 
 /**
  * the navigation destination for the ActivePreset (active timer) screen
@@ -80,9 +155,9 @@ object ActivePresetDestination : NavigationDestination {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ActiveTimerScreen(
+    viewModel: ActiveTimerViewModel,
     navigateBack: () -> Unit,
-    modifier: Modifier = Modifier,
-    timerService: TimerService
+    modifier: Modifier = Modifier
 ) {
     Scaffold(
         topBar = {
@@ -95,192 +170,287 @@ fun ActiveTimerScreen(
     ) {
         innerPadding ->
         ActiveTimerBody(
+            viewModel = viewModel,
             modifier = modifier
-                .padding(innerPadding),
-            timerService = timerService
+                .padding(innerPadding)
         )
     }
 }
 
-class MyViewModelFactory(private val mApplication: Application, private val mParam: String) : ViewModelProvider.Factory {
+fun getScrollFromDuration(time: Duration, maxTime: Duration, maxScroll: Int, roundingInSeconds: Int?) : Int {
+    return if(roundingInSeconds != null) {
+        ((time.toInt(DurationUnit.SECONDS).toFloat() /
+                maxTime.toInt(DurationUnit.SECONDS).toFloat()*maxScroll) / roundingInSeconds).toInt()*roundingInSeconds
+    } else {
+        ((time.toInt(DurationUnit.SECONDS).toFloat() /
+                maxTime.toInt(DurationUnit.SECONDS).toFloat()*maxScroll)).toInt()
+    }
+}
 
-
+fun getDurationFromScroll(scrollState: ScrollState, maxDuration: Duration, roundingInSeconds: Int) : Duration {
+    return ((((scrollState.value.toFloat() / scrollState.maxValue.toFloat()) * maxDuration.toInt(DurationUnit.SECONDS))/roundingInSeconds).roundToInt()*roundingInSeconds).seconds
 }
 
 
-
-class ActiveTimerViewModel(val timerService: TimerService) : ViewModel() {
-    private val defaultPreset = Preset(
-        id = 0,
-        name = "default",
-        roundLength = 3,
-        totalSessions = 2,
-        focusLength = 3,
-        breakLength = 1,
-        longBreakLength = 3
-    )
-
-    var onTickEvent: () -> Unit = {}
-    var onTimerFinished: () -> Unit = {}
-
-    private var loadedPreset = defaultPreset
-
-    var presetName = mutableStateOf( loadedPreset.name )
-        private set
-    var elapsedRounds =  mutableIntStateOf(0 )
-        private set
-    var elapsedSessions = mutableIntStateOf( 0 )
-        private set
-    var finishedPreset = mutableStateOf( false )
-        private set
-    private var hasSkipped = false
-
-    // For exposing the current timer start length
-    var currentTimerLength = mutableStateOf( 0.seconds )
-
-    private var isBreak = false;
-
-    fun start () {
-        timerService.currentTimeInSeconds.value = if (!isBreak) {
-            loadedPreset.focusLength.minutes
-        } else {
-            if(Math.floorMod(elapsedRounds.intValue, loadedPreset.roundLength) == 0) {
-                loadedPreset.longBreakLength.minutes
-            } else {
-                loadedPreset.breakLength.minutes
-            }
-        }
-        timerService.start(
-            onTickEvent = {
-                this.currentTimerLength.value = timerService.currentTimeInSeconds.value
-                onTickEvent()
-            },
-            onTimerFinish = {
-                onTimerFinished()
-                timerService.end()
-                this.updateProgress()
-                if(!this.finishedPreset.value) {
-                    start()
-                }
-            }
-        )
-    }
-
-
-    private fun updateProgress() {
-        if(isBreak) {
-            this.elapsedRounds.intValue += 1
-        }
-        if(Math.floorMod(elapsedRounds.intValue, loadedPreset.roundLength)==0) {
-            this.elapsedSessions.intValue += 1
-        }
-        if(this.elapsedSessions.intValue == loadedPreset.totalSessions) {
-            finishedPreset.value = true
-        }
-    }
-
-    fun skip() {
-        isBreak = !isBreak
-        hasSkipped = true
-        updateProgress()
-    }
-
-    fun end() {
-        finishedPreset.value = true;
-    }
-
-    fun reset() {
-        elapsedRounds.intValue = 0;
-        elapsedSessions.intValue = 0;
-    }
-
-
-}
-
+@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun ActiveTimerBody(
-    //viewModel: ActiveTimerViewModel,
-    modifier: Modifier = Modifier,
-    timerService: TimerService
+    viewModel: ActiveTimerViewModel,
+    modifier: Modifier = Modifier
 ) {
+
     val scrollScope = rememberCoroutineScope()
-    val scrollState = rememberScrollState(
-        timerService.currentTimeInSeconds.value.absoluteValue.toInt(DurationUnit.SECONDS)
-    )
+    val lightScope = rememberCoroutineScope()
+    val scrollState = rememberScrollState(0)
+    val currentLightColor = remember { Animatable(Color.DarkGray) }
+    val activeBreakLightColor = Color(130, 85, 255, 255)
+    val activeFocusLightColor = Color(255, 224, 70, 255)
+    val hours by viewModel.hours
+    val minutes by viewModel.minutes
+    val seconds by viewModel.seconds
+    val timerState by viewModel.currentState
+    val isBreak by viewModel.isBreak
 
-    var timerReachedEnd by remember { mutableStateOf( false ) }
 
-    val startTimer = {
-        timerService.start(onTickEvent = {
+    viewModel.onTickEvent = {
+        if(!scrollState.isScrollInProgress) {
             scrollScope.launch {
-                scrollState.animateScrollTo(
-                    timerService.currentTimeInSeconds.value.toInt(DurationUnit.SECONDS),
-                )
+                scrollState.scrollTo(
+                    getScrollFromDuration(
+                        viewModel.currentTimerLength.value,
+                        90.minutes,
+                        scrollState.maxValue, null
+                    ))
             }
-        }) {
-            timerReachedEnd = true
-            timerService.end()
         }
     }
 
-    var initialized by remember { mutableStateOf(false) }
-    if(!initialized) {
-        timerService.setTime(1.minutes)
-        initialized = true
+    viewModel.onSync = {
+        scrollScope.launch {
+            scrollState.animateScrollTo(
+                getScrollFromDuration(
+                    viewModel.currentTimerLength.value,
+                    90.minutes,
+                    scrollState.maxValue, null
+                ))
+        }
     }
 
-    val hours by timerService.hours
-    val minutes by timerService.minutes
-    val seconds by timerService.seconds
+    viewModel.onTimerFinished = {
+        lightScope.launch {
+            currentLightColor.animateTo(if (isBreak) {
+                activeBreakLightColor
+            } else {
+                activeFocusLightColor
+            }, tween(1000))
+        }
+    }
 
-    val timerAdjustCoefficient = 0.01f
-    var timerAdjustmentTick by remember { mutableFloatStateOf(0.0f) }
+    viewModel.refresh()
+
+
+
+
+
+    var scrollEventToHandle by remember { mutableStateOf(false) }
+
+
+    //TODO: This prevents thread problems, but might want a better solution
+    if(scrollState.isScrollInProgress) {
+        if (!scrollEventToHandle) {
+            viewModel.pause()
+            lightScope.launch {
+                currentLightColor.animateTo(Color.DarkGray, animationSpec = tween(1000))
+            }
+        }
+        viewModel.currentTimerLength.value = getDurationFromScroll(
+            scrollState, 90.minutes, 60
+        )
+        scrollEventToHandle = true
+    } else if (scrollEventToHandle) {
+        scrollEventToHandle = false
+        if(scrollState.value != getScrollFromDuration(
+                viewModel.currentTimerLength.value,
+                90.minutes,
+                scrollState.maxValue, null
+            )) {
+            viewModel.sync()
+        }
+    }
+
+    viewModel.refresh()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surface)
+            .background(
+                brush = Brush.linearGradient(
+                    colors = listOf(Color.Black, Color.DarkGray, Color.Black)
+                )
+            )
             .padding(30.dp),
-        verticalArrangement = Arrangement.Center,
+        verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        TimerDisplay(hours = hours, minutes = minutes, seconds = seconds)
-        TimerAdjustmentBar(
-            scrollState = scrollState,
-            onDragEnd = { timerAdjustmentTick = 0.0f }
-        ) { adjustment ->
-            timerAdjustmentTick += adjustment * timerAdjustCoefficient
-            if (abs(timerAdjustmentTick) > 1) {
-                timerService.adjustTime(timerAdjustmentTick.toInt() * -60)
-                scrollScope.launch {
-                    scrollState.animateScrollTo(
-                        timerService.currentTimeInSeconds.value.toInt(
-                            DurationUnit.SECONDS
-                        )
-                    )
+//        Column() {
+//            Text("scrollEvent:$scrollEvent  syncEvent: $isSyncing")
+//            Text("${viewModel.currentTimerLength.value.toInt(DurationUnit.SECONDS).toFloat() /
+//                    90.minutes.toInt(DurationUnit.SECONDS).toFloat()}")
+//            Text("${scrollState.value.toFloat() / scrollState.maxValue.toFloat()}")
+//            Text(if(isBreak){"break"}else{"focus"})
+//        }
+        Spacer(Modifier.height(50.dp))
+        // INFO DISPLAY
+        Column(
+            modifier = Modifier
+                .background(
+                    Brush.linearGradient(listOf(Color.Gray, Color.White, Color.Gray)),
+                    RoundedCornerShape(16.dp)
+                )
+                .fillMaxWidth()
+                .border(
+                    BorderStroke(
+                        2.dp,
+                        Brush.linearGradient(listOf(Color.DarkGray, Color.Gray, Color.LightGray))
+                    ),
+                    RoundedCornerShape(16.dp)
+                )
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+
+            Row() {
+                LitContainer(
+                    lightColor = currentLightColor.value,
+                    height = 100f,
+                    rounding = 6.dp
+                ) {
+                    Text("${viewModel.elapsedRounds.intValue} / ${viewModel.loadedPreset.roundsInSession}")
                 }
-                timerAdjustmentTick = 0.0f
+                Spacer(Modifier.width(100.dp))
+                LitContainer(
+                    lightColor = currentLightColor.value,
+                    height = 100f,
+                    rounding = 6.dp
+                ) {
+                    Text("${viewModel.elapsedSessions.intValue} / ${viewModel.loadedPreset.totalSessions}")
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            LitContainer(
+                lightColor = currentLightColor.value,
+                height = 300f,
+                rounding = 16.dp
+            ) {
+                Box(
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                ) {
+                    TimerDisplay(hours = hours, minutes = minutes, seconds = seconds)
+                }
+
+            }
+
+            //TimerDisplay(hours, minutes, seconds)
+            TimerAdjustmentBar (
+                scrollState = scrollState,
+                lightColor = currentLightColor.value
+            )
+        }
+
+        // BUTTON ROW
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
+        )  {
+            ResetButton(
+                enabled = timerState != TimerService.State.Idle && timerState != TimerService.State.Reset,
+                onReset = {
+                    viewModel.reset()
+                    viewModel.sync()
+                    lightScope.launch {
+                        currentLightColor.animateTo(Color.DarkGray, animationSpec = tween(1000))
+                    }
+                },
+                size = 80.dp
+            )
+            PlayPauseButton(
+                timerIsRunning = timerState == TimerService.State.Running,
+                onPlay = {
+                    viewModel.start()
+                    lightScope.launch {
+
+                        currentLightColor.animateTo(
+                            if(isBreak) {activeBreakLightColor} else {activeFocusLightColor},
+                            animationSpec = tween(1000)
+                        )
+                    }
+                         },
+                onPause = {
+                    viewModel.pause()
+                    lightScope.launch {
+                        currentLightColor.animateTo(Color.DarkGray, animationSpec = tween(1000))
+                    }
+                          },
+                size = 120.dp
+            )
+            Box(
+                modifier = Modifier
+                    .requiredSize(80.dp)
+                    .background(
+                        Brush.linearGradient(listOf(Color.Gray, Color.White, Color.Gray)),
+                        RoundedCornerShape(80.dp)
+                    )
+                    .border(
+                        BorderStroke(
+                            2.dp,
+                            Brush.linearGradient(listOf(Color.White, Color.DarkGray))
+                        ),
+                        RoundedCornerShape(80.dp)
+                    )
+                    .clickable {
+                        viewModel.skip()
+                        viewModel.sync()
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Text("skip", fontWeight = FontWeight.Bold)
             }
         }
         Spacer(Modifier.height(30.dp))
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        )  {
-            PlayPauseButton(
-                isPaused = timerService.currentState.value == TimerService.State.Paused,
-                onPlay = { startTimer() },
-                onPause = { timerService.pause() },
-                size = 100.dp
+    }
+}
+
+
+@Composable
+fun NumberDisplay(
+    number: String,
+    style: TextStyle
+) {
+    Box(
+        modifier = Modifier
+            .background(
+                brush = Brush.linearGradient(
+                    colors = listOf(Color.Gray, Color.White, Color.Black),
+                    end = Offset(0.0f, 300f)
+                )
             )
-            Spacer(Modifier.height(50.dp))
-            ResetButton(
-                timerService = timerService,
-                onReset = {
-                    timerService.end()
-                    initialized = false
-                },
-                size = 75.dp
+            .border(
+                BorderStroke(
+                    2.dp,
+                    Brush.linearGradient(
+                        colors = listOf(Color.DarkGray, Color.White),
+                        start = Offset(0f, 0.0f),
+                        end = Offset(200f, 100f))
+                ),
+                RoundedCornerShape(2.dp)
             )
-        }
+            .padding(horizontal = 2.dp)
+//            .shadow(5.dp)
+
+    ){
+        AnimatedCounter(count = number, style = style)
     }
 }
 
@@ -296,7 +466,15 @@ fun TimerDisplay (
 ) {
     Text(
         text = "$hours:$minutes:$seconds",
-        fontSize = 72.sp
+        style = TextStyle(
+            fontSize = 68.sp,
+            shadow = Shadow(
+                color = Color.White,
+//                offset = Offset(10f, 10f),
+                blurRadius =20f
+            )
+        ),
+        modifier = Modifier.padding(0.dp)
     )
 }
 
@@ -306,25 +484,90 @@ fun TimerDisplay (
  */
 @Composable
 fun PlayPauseButton (
-    isPaused: Boolean,
+    timerIsRunning: Boolean,
     onPause: () -> Unit,
     onPlay: () -> Unit,
     size: Dp
 ) {
     IconButton(
         onClick = {
-            if (isPaused) { onPause() } else { onPlay() }
+            if (timerIsRunning) { onPause() } else { onPlay() }
         },
-        modifier = Modifier.requiredSize(size)
+        modifier = Modifier
+            .requiredSize(size)
+            .background(
+                Brush.linearGradient(listOf(Color.Gray, Color.White, Color.Gray)),
+                RoundedCornerShape(size)
+            )
+            .border(
+                BorderStroke(2.dp, Brush.linearGradient(listOf(Color.White, Color.DarkGray))),
+                RoundedCornerShape(size)
+            )
     ) {
-        val icon = if (isPaused) {
+        val icon = if (timerIsRunning) {
             painterResource(id = R.drawable.pause_icon)
         } else {
             painterResource(id = R.drawable.play_icon)
         }
         Icon(
-            icon, "Play/Pause", Modifier.requiredSize(size)
+            painter = icon,
+            contentDescription = "Play/Pause",
+            modifier = Modifier
+                .requiredSize(size/2)
+                .blur(2.dp),
+            tint = Color.Black
         )
+        Icon(
+            painter = icon,
+            contentDescription = "Play/Pause",
+            modifier = Modifier
+                .requiredSize(size/2),
+            tint = Color.LightGray
+        )
+    }
+}
+
+@Composable
+fun LitContainer(
+    lightColor: Color,
+    height: Float,
+    rounding: Dp,
+    content: @Composable () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .background(
+                Color.LightGray,
+//                Brush.linearGradient(
+//                    colors = listOf(Color.White, Color.LightGray)
+//                ),
+                RoundedCornerShape(rounding)
+            )
+            .border(
+                BorderStroke(
+                    2.dp,
+                    Brush.linearGradient(
+                        colors = listOf(Color.DarkGray, Color.White),
+                        start = Offset(0f, 0.0f),
+                        end = Offset(0f, height)
+                    )
+                ),
+                RoundedCornerShape(rounding)
+            )
+    ) {
+        Box( // LIGHTING OVERLAY
+            modifier = Modifier
+                .background(
+                    brush = Brush.linearGradient(
+                        colors = listOf(lightColor, Color.Black.copy(alpha = 0.0f)),
+                        end = Offset(0f, height)
+                    ),
+                    alpha = 0.5f,
+                    shape = RoundedCornerShape(rounding)
+                )
+        ) {
+            content()
+        }
     }
 }
 
@@ -335,20 +578,28 @@ fun PlayPauseButton (
  */
 @Composable
 fun ResetButton(
-    timerService: TimerService,
+    enabled: Boolean,
     onReset: () -> Unit,
     size: Dp
 ) {
     IconButton(
-        enabled = timerService.currentState.value != TimerService.State.Idle &&
-                timerService.currentState.value != TimerService.State.Reset,
+        enabled = enabled,
         onClick = {
             onReset()
         },
-        modifier = Modifier.requiredSize(size)
+        modifier = Modifier
+            .requiredSize(size)
+            .background(
+                Brush.linearGradient(listOf(Color.Gray, Color.White, Color.Gray)),
+                RoundedCornerShape(size)
+            )
+            .border(
+                BorderStroke(2.dp, Brush.linearGradient(listOf(Color.White, Color.DarkGray))),
+                RoundedCornerShape(size)
+            )
     ) {
         Icon(
-            Icons.Filled.Refresh, "Reset button", Modifier.requiredSize(size)
+            Icons.Filled.Refresh, "Reset button", Modifier.requiredSize(size/2)
         )
     }
 }
@@ -360,25 +611,14 @@ fun ResetButton(
 @Composable
 fun TimerAdjustmentBar (
     scrollState: ScrollState,
-    onDragEnd: () -> Unit,
-    onAdjustment: (adjustment: Float) -> Unit
+    lightColor: Color
 ) {
-    Box {
-        MinuteMarkers( scrollState )
-        Box(
-            modifier = Modifier
-                .requiredWidth(300.dp)
-                .requiredHeight(50.dp)
-                .pointerInput(Unit) {
-                    detectDragGestures(
-                        onDragEnd = onDragEnd
-                    ) { _, dragAmount ->
-                        onAdjustment(dragAmount.x)
-                    }
-                }
-        ) {
-
-        }
+    Column (
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(Icons.Filled.KeyboardArrowUp, "")
+        MinuteMarkers( scrollState, lightColor )
+        Icon(Icons.Filled.KeyboardArrowDown, "")
     }
 }
 
@@ -388,27 +628,76 @@ fun TimerAdjustmentBar (
  */
 @Composable
 fun MinuteMarkers (
-    scrollState: ScrollState
+    scrollState: ScrollState,
+    lightColor: Color
 ) {
-    Row(
-        modifier = Modifier
-            .requiredWidth(300.dp)
-            .height(50.dp)
-            .horizontalScroll(scrollState),
-        verticalAlignment = Alignment.CenterVertically
+    Box(modifier = Modifier
+        .requiredWidth(300.dp)
+        .background(
+            Brush.linearGradient(
+                colors = listOf(Color.Gray, Color.White, Color.Gray)
+            ),
+            RoundedCornerShape(8.dp)
+        )
+        .border(
+            BorderStroke(
+                2.dp, Brush.linearGradient(
+                    colors = listOf(Color.DarkGray, Color.White),
+                    start = Offset(0f, 0.0f),
+                    end = Offset(50f, 300f)
+                )
+            ),
+            RoundedCornerShape(8.dp)
+        )
+        .padding(vertical = 2.dp)
     ) {
-        repeat(20) {
+        Row(
+            modifier = Modifier
+                .requiredWidth(300.dp)
+                .horizontalScroll(scrollState)
+                .background(
+                    brush = Brush.linearGradient(
+                        colors = listOf(lightColor, Color.Black.copy(alpha = 0.0f)),
+                        end = Offset(0f, 200f)
+                    ),
+                    alpha = 0.5f,
+                    shape = RoundedCornerShape(8.dp)
+                )
+            ,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            val spacerWidth = 18.sp
+            Text(" ", fontSize = spacerWidth)
+            repeat(20) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Row(){
+                        Text("  ", fontSize = spacerWidth)
+                        Text("|", fontSize = 26.sp)
+                        Text("  ", fontSize = spacerWidth)
+                    }
+
+                    if (it != 0) {
+                        Text(((it-1)*5).toString(), fontSize = 14.sp)
+                    }
+                }
+                repeat(4) {
+                    Text("  ", fontSize = spacerWidth)
+                    Text("|", fontSize = 16.sp)
+                    Text("  ", fontSize = spacerWidth)
+                }
+            }
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("  |  ", fontSize = 26.sp)
-                if (it != 0) {
-                    Text(((it-1)*5).toString(), fontSize = 14.sp)
-                } else {
-                    Text("", fontSize = 14.sp)
+                Row() {
+                    Text("  ", fontSize = spacerWidth)
+                    Text("|", fontSize = 26.sp)
+                    Text("   ", fontSize = spacerWidth)
                 }
             }
-            Text("  |    |    |    |  ", fontSize = 16.sp)
         }
     }
+
 }

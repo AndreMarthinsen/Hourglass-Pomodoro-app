@@ -5,11 +5,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.example.assignment1.data.Preset
 import com.example.assignment1.data.PresetRepository
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.launch
 
 class PresetEditViewModel(
     savedStateHandle: SavedStateHandle,
@@ -60,7 +57,7 @@ data class PresetDetails(
 fun PresetDetails.toPreset() : Preset = Preset(
     id = id,
     name = name,
-    roundLength = roundLength.toInt()?: 0,
+    roundsInSession = roundLength.toInt()?: 0,
     totalSessions = totalSessions.toInt()?: 0,
     focusLength = focusLength.toInt()?: 0,
     breakLength = breakLength.toInt()?: 0,
@@ -75,7 +72,7 @@ fun Preset.toPresetUiState(isEntryValid: Boolean = false): PresetUiState = Prese
 fun Preset.toPresetDetails(): PresetDetails = PresetDetails(
     id = id,
     name = name,
-    roundLength = roundLength.toString(),
+    roundLength = roundsInSession.toString(),
     totalSessions = totalSessions.toString(),
     focusLength = focusLength.toString(),
     breakLength = breakLength.toString(),

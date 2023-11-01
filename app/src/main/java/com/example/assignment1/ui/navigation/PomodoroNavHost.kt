@@ -48,7 +48,7 @@ fun PomodoroNavHost(
             val parentViewModel = viewModel<ActiveTimerViewModel>(parentEntry)
             parentViewModel.timerService = timerService
             ActiveTimerScreen(
-                navigateBack = { navController.popBackStack() },
+                navigateBack = { navController.navigate(PresetsDestination.route) },
                 viewModel = parentViewModel
             )
         }

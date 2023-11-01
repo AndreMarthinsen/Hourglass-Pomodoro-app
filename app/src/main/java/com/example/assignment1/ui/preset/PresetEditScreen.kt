@@ -1,6 +1,7 @@
 package com.example.assignment1.ui.preset
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
@@ -105,10 +106,10 @@ fun PresetEntryForm(
             singleLine = true
         )
         OutlinedTextField(
-            value = presetDetails.roundLength,
-            onValueChange = { onValueChange(presetDetails.copy(roundLength = it)) },
+            value = presetDetails.roundsInSession,
+            onValueChange = { onValueChange(presetDetails.copy(roundsInSession = it)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            label = { Text("Round length")},
+            label = { Text("Rounds per session") },
             modifier = Modifier.fillMaxWidth(),
             enabled = enabled,
             singleLine = true
@@ -117,7 +118,7 @@ fun PresetEntryForm(
             value = presetDetails.totalSessions,
             onValueChange = { onValueChange(presetDetails.copy(totalSessions = it)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            label = { Text("Total Sessions")},
+            label = { Text("Total Sessions") },
             modifier = Modifier.fillMaxWidth(),
             enabled = enabled,
             singleLine = true
@@ -126,7 +127,7 @@ fun PresetEntryForm(
             value = presetDetails.focusLength,
             onValueChange = { onValueChange(presetDetails.copy(focusLength = it)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            label = { Text("Focus length")},
+            label = { Text("Focus length") },
             modifier = Modifier.fillMaxWidth(),
             enabled = enabled,
             singleLine = true
@@ -135,7 +136,16 @@ fun PresetEntryForm(
             value = presetDetails.breakLength,
             onValueChange = { onValueChange(presetDetails.copy(breakLength = it)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            label = { Text("Break length")},
+            label = { Text("Break length") },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = enabled,
+            singleLine = true
+        )
+        OutlinedTextField(
+            value = presetDetails.longBreakLength,
+            onValueChange = { onValueChange(presetDetails.copy(longBreakLength = it)) },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            label = { Text("Long break length") },
             modifier = Modifier.fillMaxWidth(),
             enabled = enabled,
             singleLine = true

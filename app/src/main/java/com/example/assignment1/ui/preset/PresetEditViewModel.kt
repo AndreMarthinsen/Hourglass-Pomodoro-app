@@ -31,10 +31,11 @@ class PresetEditViewModel(
     private fun validateInput(uiState: PresetDetails = presetUiState.presetDetails): Boolean {
         return with(uiState) {
             name.isNotBlank() &&
-                    roundLength.isNotBlank() &&
+                    roundsInSession.isNotBlank() &&
                     totalSessions.isNotBlank() &&
                     focusLength.isNotBlank() &&
-                    breakLength.isNotBlank()
+                    breakLength.isNotBlank() &&
+                    longBreakLength.isNotBlank()
         }
     }
 }
@@ -46,18 +47,19 @@ data class PresetUiState(
 data class PresetDetails(
     val id: Int = 0,
     val name: String = "",
-    val roundLength: String = "",
+    val roundsInSession: String = "",
     val totalSessions: String = "",
     val focusLength: String = "",
     val breakLength: String = "",
-    val longBreakLength: String = ""
+    val longBreakLength: String = "",
+    val totalLength: String = ""
 )
 
 //TODO: check if explicitly initializing fields is necessary
 fun PresetDetails.toPreset() : Preset = Preset(
     id = id,
     name = name,
-    roundsInSession = roundLength.toInt()?: 0,
+    roundsInSession = roundsInSession.toInt()?: 0,
     totalSessions = totalSessions.toInt()?: 0,
     focusLength = focusLength.toInt()?: 0,
     breakLength = breakLength.toInt()?: 0,
@@ -72,9 +74,10 @@ fun Preset.toPresetUiState(isEntryValid: Boolean = false): PresetUiState = Prese
 fun Preset.toPresetDetails(): PresetDetails = PresetDetails(
     id = id,
     name = name,
-    roundLength = roundsInSession.toString(),
+    roundsInSession = roundsInSession.toString(),
     totalSessions = totalSessions.toString(),
     focusLength = focusLength.toString(),
     breakLength = breakLength.toString(),
     longBreakLength = longBreakLength.toString(),
+    totalLength = totalLength.toString()
 )

@@ -55,12 +55,14 @@ fun PomodoroNavHost(
         }
         composable(route = PresetEditDestination.route) {
             PresetEditScreen(
-                navigateBack = { navController.popBackStack() }
+                navigateBack = { navController.popBackStack() },
+                navController = navController
             )
         }
         composable(route = PresetsDestination.route) {
             PresetsScreen(
-                navigateToPresetEdit = { navController.navigate(PresetEditDestination.route)}
+                navigateToPresetEdit = { navController.navigate(PresetEditDestination.route)},
+                navController = navController
             )
         }
         composable(route = SettingsDestination.route) {

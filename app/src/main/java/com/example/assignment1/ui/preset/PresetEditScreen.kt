@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.assignment1.PomodoroTopAppBar
 import com.example.assignment1.ui.AppViewModelProvider
 import com.example.assignment1.ui.navigation.NavigationDestination
@@ -33,6 +34,7 @@ object PresetEditDestination : NavigationDestination {
 @Composable
 fun PresetEditScreen(
     navigateBack: () -> Unit,
+    navController: NavController,
     modifier: Modifier = Modifier,
     viewModel: PresetEditViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
@@ -43,7 +45,8 @@ fun PresetEditScreen(
            PomodoroTopAppBar(
                title = "Edit Preset",
                canNavigateBack = true,
-               navigateUp = navigateBack
+               navigateUp = navigateBack,
+               navController = navController
            )
        },
        modifier = modifier

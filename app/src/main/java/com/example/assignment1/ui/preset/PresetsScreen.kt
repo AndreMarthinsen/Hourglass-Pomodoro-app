@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.assignment1.PomodoroTopAppBar
 import com.example.assignment1.data.Preset
 import com.example.assignment1.ui.AppViewModelProvider
@@ -46,6 +47,7 @@ object PresetsDestination : NavigationDestination {
 fun PresetsScreen(
     navigateToPresetEdit: () -> Unit,
     modifier: Modifier = Modifier,
+    navController: NavController,
     viewModel: PresetsViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val presetsUiState by viewModel.presetsUiState.collectAsState()
@@ -56,7 +58,8 @@ fun PresetsScreen(
             PomodoroTopAppBar(
                 title = "Presets",
                 canNavigateBack = false,
-                scrollBehavior = scrollBehavior
+                scrollBehavior = scrollBehavior,
+                navController = navController
             )
         },
         floatingActionButton = {

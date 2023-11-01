@@ -167,19 +167,17 @@ fun ActiveTimerScreen(
             PomodoroTopAppBar(
                 title = "Active Preset",
                 canNavigateBack = true,
-                navigateUp = navigateBack
+                navigateUp = navigateBack,
+                navController = navController
             )
         },
     ) {
         innerPadding ->
-        var expanded by remember { mutableStateOf(false) }
-//        ActiveTimerBody(
-//            viewModel = viewModel,
-//            modifier = modifier
-//                .padding(innerPadding)
-//        )
-
-
+        ActiveTimerBody(
+            viewModel = viewModel,
+            modifier = modifier
+                .padding(innerPadding)
+        )
     }
 }
 

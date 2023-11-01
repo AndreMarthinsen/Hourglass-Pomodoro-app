@@ -49,7 +49,7 @@ fun DropDownNavigation (
                     navController.navigate( ActivePresetDestination.route )
                 }
             ) {
-                Text("Presets")
+                Text("Timer")
             }
         }
 

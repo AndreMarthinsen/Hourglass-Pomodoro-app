@@ -1,7 +1,9 @@
 package com.example.assignment1
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -43,26 +45,31 @@ fun PomodoroTopAppBar(
     navigateUp: () -> Unit = {},
     navController: NavController
 ) {
-    CenterAlignedTopAppBar(
-        title = { Text(title) },
-        modifier = modifier,
-        scrollBehavior = scrollBehavior,
-        navigationIcon = {
-            if (canNavigateBack) {
-                IconButton(onClick = navigateUp) {
-                    Icon(
-                        imageVector = Icons.Filled.ArrowBack,
-                        contentDescription = "Back"
-                    )
+    var expanded by remember { mutableStateOf(false) }
+    Column() {
+        CenterAlignedTopAppBar(
+            title = { Text(title) },
+            modifier = modifier,
+            scrollBehavior = scrollBehavior,
+            navigationIcon = {
+                if (canNavigateBack) {
+                    IconButton(onClick = navigateUp) {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                }
+            },
+            actions = {
+                IconButton(onClick = {expanded = !expanded}) {
+                    Icon(imageVector = Icons.Filled.Menu,contentDescription = null)
                 }
             }
-        },
-        actions = {
-            var expanded by remember { mutableStateOf(false) }
-            DropDownNavigation(navController = navController, expanded = expanded, currentRoute = "") {
-
-            }
+        )
+        DropDownNavigation(navController = navController, expanded = expanded, currentRoute = navController.currentDestination?.route.toString()) {
+            expanded = !expanded
         }
-    )
+    }
 
 }

@@ -10,10 +10,16 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.assignment1.services.TimerService
+import com.example.assignment1.ui.navigation.DropDownNavigation
 import com.example.assignment1.ui.navigation.PomodoroNavHost
 
 @Composable
@@ -34,7 +40,8 @@ fun PomodoroTopAppBar(
     canNavigateBack: Boolean,
     modifier: Modifier = Modifier,
     scrollBehavior: TopAppBarScrollBehavior? = null,
-    navigateUp: () -> Unit = {}
+    navigateUp: () -> Unit = {},
+    navController: NavController
 ) {
     CenterAlignedTopAppBar(
         title = { Text(title) },
@@ -48,6 +55,12 @@ fun PomodoroTopAppBar(
                         contentDescription = "Back"
                     )
                 }
+            }
+        },
+        actions = {
+            var expanded by remember { mutableStateOf(false) }
+            DropDownNavigation(navController = navController, expanded = expanded, currentRoute = "") {
+
             }
         }
     )

@@ -73,9 +73,11 @@ import androidx.compose.ui.text.font.Typeface
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.example.assignment1.PomodoroTopAppBar
 import com.example.assignment1.R
 import com.example.assignment1.services.TimerService
+import com.example.assignment1.ui.navigation.DropDownNavigation
 import com.example.assignment1.ui.navigation.NavigationDestination
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -155,6 +157,7 @@ object ActivePresetDestination : NavigationDestination {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ActiveTimerScreen(
+    navController: NavController,
     viewModel: ActiveTimerViewModel,
     navigateBack: () -> Unit,
     modifier: Modifier = Modifier
@@ -169,11 +172,14 @@ fun ActiveTimerScreen(
         },
     ) {
         innerPadding ->
-        ActiveTimerBody(
-            viewModel = viewModel,
-            modifier = modifier
-                .padding(innerPadding)
-        )
+        var expanded by remember { mutableStateOf(false) }
+//        ActiveTimerBody(
+//            viewModel = viewModel,
+//            modifier = modifier
+//                .padding(innerPadding)
+//        )
+
+
     }
 }
 
@@ -442,7 +448,8 @@ fun NumberDisplay(
                     Brush.linearGradient(
                         colors = listOf(Color.DarkGray, Color.White),
                         start = Offset(0f, 0.0f),
-                        end = Offset(200f, 100f))
+                        end = Offset(200f, 100f)
+                    )
                 ),
                 RoundedCornerShape(2.dp)
             )
@@ -513,7 +520,7 @@ fun PlayPauseButton (
             painter = icon,
             contentDescription = "Play/Pause",
             modifier = Modifier
-                .requiredSize(size/2)
+                .requiredSize(size / 2)
                 .blur(2.dp),
             tint = Color.Black
         )

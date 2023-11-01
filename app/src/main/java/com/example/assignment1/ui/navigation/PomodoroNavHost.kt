@@ -49,7 +49,8 @@ fun PomodoroNavHost(
             parentViewModel.timerService = timerService
             ActiveTimerScreen(
                 navigateBack = { navController.popBackStack() },
-                viewModel = parentViewModel
+                viewModel = parentViewModel,
+                navController = navController
             )
         }
         composable(route = PresetEditDestination.route) {

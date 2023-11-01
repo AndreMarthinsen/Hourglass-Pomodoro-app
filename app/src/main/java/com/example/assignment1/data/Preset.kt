@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 
 /**
  * Class that describes a preset-pomodoro session
- * roundLength: total length of the round in minutes, consisting of one or more focus sessions
+ * roundInSessions: total length of the round in minutes, consisting of one or more focus sessions
  * totalSessions: the number of focus sessions in a round
  * focusLength: the length of a focus session in minutes
  * breakLength: the length of an inter-focus session break in minutes
@@ -21,4 +21,10 @@ data class Preset (
     val focusLength: Int,
     val breakLength: Int,
     val longBreakLength: Int,
-)
+) {
+    val totalLength: Int
+        get() = (
+                ((focusLength * roundsInSession) + (breakLength * (roundsInSession - 1))) * totalSessions
+                + (longBreakLength * (totalSessions - 1))
+                )
+}

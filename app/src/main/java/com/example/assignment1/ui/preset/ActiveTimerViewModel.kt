@@ -34,7 +34,7 @@ class ActiveTimerViewModel(
         longBreakLength = 25
     )
 
-    val dingSound = MediaPlayer.create(this.getApplication(), R.raw.timer_ding)
+    private val dingSound: MediaPlayer = MediaPlayer.create(this.getApplication(), R.raw.timer_ding)
 
     @SuppressLint("StaticFieldLeak")
     lateinit var timerService : TimerService

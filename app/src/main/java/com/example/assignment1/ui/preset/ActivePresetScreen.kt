@@ -1,6 +1,7 @@
 package com.example.assignment1.ui.preset
 
 import android.annotation.SuppressLint
+import android.media.MediaPlayer
 import androidx.compose.animation.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
@@ -50,6 +51,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.assignment1.MainActivity
 import com.example.assignment1.PomodoroTopAppBar
 import com.example.assignment1.R
 import com.example.assignment1.services.TimerService
@@ -135,7 +137,6 @@ fun ActiveTimerBody(
     val timerState by timerViewModel.currentState
     val isOnBreak by timerViewModel.isBreak
 
-
     timerViewModel.onTickEvent = {
         if(!scrollState.isScrollInProgress) {
             scrollScope.launch {
@@ -162,6 +163,7 @@ fun ActiveTimerBody(
 
     timerViewModel.onTimerFinished = {
         lightScope.launch {
+
             currentLightColor.animateTo(if (isOnBreak) {
                 activeBreakLightColor
             } else {

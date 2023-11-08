@@ -4,6 +4,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.IBinder
 import androidx.activity.ComponentActivity
@@ -19,7 +20,7 @@ import com.example.assignment1.ui.navigation.PomodoroNavHost
 
 @ExperimentalAnimationApi
 class MainActivity : ComponentActivity() {
-
+    private var mediaplayer = MediaPlayer()
     private var isBound = mutableStateOf(false)
     private lateinit var timerService: TimerService
     private val connection = object : ServiceConnection {

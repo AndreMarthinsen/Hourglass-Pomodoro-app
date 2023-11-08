@@ -25,7 +25,8 @@ object AppViewModelProvider {
         }
         initializer {
             ActiveTimerViewModel(
-                pomodoroApplication().container.presetRepository
+                pomodoroApplication().container.presetRepository,
+                pomodoroApplication()
             )
         }
     }

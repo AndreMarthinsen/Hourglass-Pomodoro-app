@@ -1,9 +1,12 @@
 package com.example.assignment1.ui.preset
 
 import android.annotation.SuppressLint
+import android.app.Application
+import android.media.MediaPlayer
 import android.util.Log
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.viewModelFactory
@@ -15,11 +18,12 @@ import kotlinx.coroutines.flow.first
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import androidx.lifecycle.viewModelScope
+import com.example.assignment1.R
 import kotlinx.coroutines.launch
 
 class ActiveTimerViewModel(
-    private val presetRepository: PresetRepository
-) : ViewModel() {
+    private val presetRepository: PresetRepository, application: Application
+) : AndroidViewModel(application) {
     private val defaultPreset = Preset(
         id = 0,
         name = "default",
@@ -29,6 +33,8 @@ class ActiveTimerViewModel(
         breakLength = 5,
         longBreakLength = 25
     )
+
+    val dingSound = MediaPlayer.create(this.getApplication(), R.raw.timer_ding)
 
     @SuppressLint("StaticFieldLeak")
     lateinit var timerService : TimerService
@@ -94,6 +100,7 @@ class ActiveTimerViewModel(
             },
             onTimerFinish = {
                 onTimerFinished()
+                dingSound.start()
                 this.progressTimer()
                 pause()
                 isSetup = false

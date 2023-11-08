@@ -7,7 +7,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import com.example.assignment1.services.TimerService
+import com.example.assignment1.ui.AppViewModelProvider
 import com.example.assignment1.ui.preset.ActivePresetDestination
 import com.example.assignment1.ui.preset.ActiveTimerScreen
 import com.example.assignment1.ui.preset.ActiveTimerViewModel
@@ -34,23 +37,24 @@ fun PomodoroNavHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = ActivePresetDestination.route,
+        startDestination = ActivePresetDestination.routeWithArgs,
         modifier = modifier
     ) {
         /**
          * the navigateBack-params provide a callback for the back-button on the various screens
          * in our case it tells the navController to return to the previous item on the navstack
          */
-        composable(route = ActivePresetDestination.route) {
-            val parentEntry = remember(it){
-                navController.getBackStackEntry(ActivePresetDestination.route)
-            }
-            val parentViewModel = viewModel<ActiveTimerViewModel>(parentEntry)
+        composable(
+            route = ActivePresetDestination.routeWithArgs,
+            arguments = listOf(navArgument("presetId") { type = NavType.IntType})
+        ) { backStackEntry ->
+            val parentViewModel: ActiveTimerViewModel = viewModel(factory= AppViewModelProvider.Factory)
             parentViewModel.timerService = timerService
             ActiveTimerScreen(
                 navigateBack = { navController.popBackStack() },
                 viewModel = parentViewModel,
-                navController = navController
+                navController = navController,
+                presetID = backStackEntry.arguments?.getInt("presetId")?:0
             )
         }
         composable(route = PresetEditDestination.route) {

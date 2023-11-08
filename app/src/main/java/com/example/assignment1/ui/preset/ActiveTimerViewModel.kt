@@ -1,19 +1,25 @@
 package com.example.assignment1.ui.preset
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.assignment1.data.Preset
+import com.example.assignment1.data.PresetRepository
 import com.example.assignment1.services.TimerService
 import com.example.assignment1.services.pad
+import kotlinx.coroutines.flow.first
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 
-
-class ActiveTimerViewModel() : ViewModel() {
+class ActiveTimerViewModel(
+    private val presetRepository: PresetRepository
+) : ViewModel() {
     private val defaultPreset = Preset(
         id = 0,
         name = "default",
@@ -33,6 +39,9 @@ class ActiveTimerViewModel() : ViewModel() {
 //            }
 //        }
 //    }
+
+
+
 
     @SuppressLint("StaticFieldLeak")
     lateinit var timerService : TimerService
@@ -112,6 +121,27 @@ class ActiveTimerViewModel() : ViewModel() {
             this@ActiveTimerViewModel.hours.value = hours.toInt().pad()
             this@ActiveTimerViewModel.minutes.value = minutes.pad()
             this@ActiveTimerViewModel.seconds.value = seconds.pad()
+        }
+    }
+
+    fun loadPreset(id: Int) {
+        presetRepository.getPresetStream(id).let { flow ->
+            viewModelScope.launch {
+                try {
+
+                    flow.first {preset ->
+                        if(preset != null) {
+                            preset.id == id
+                        } else {
+                            false
+                        }
+                    }?.run {
+                        loadedPreset = this
+                    }
+                } catch (error: Error) {
+                    Log.d("DB Access with id $id:", error.toString())
+                }
+            }
         }
     }
 

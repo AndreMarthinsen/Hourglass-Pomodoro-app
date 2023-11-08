@@ -160,7 +160,8 @@ fun ActiveTimerScreen(
     navController: NavController,
     viewModel: ActiveTimerViewModel,
     navigateBack: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    presetID: Int
 ) {
     Scaffold(
         topBar = {
@@ -173,6 +174,7 @@ fun ActiveTimerScreen(
         },
     ) {
         innerPadding ->
+        viewModel.loadPreset(presetID)
         ActiveTimerBody(
             viewModel = viewModel,
             modifier = modifier
@@ -202,7 +204,6 @@ fun ActiveTimerBody(
     viewModel: ActiveTimerViewModel,
     modifier: Modifier = Modifier
 ) {
-
     val scrollScope = rememberCoroutineScope()
     val lightScope = rememberCoroutineScope()
     val scrollState = rememberScrollState(0)
@@ -214,7 +215,6 @@ fun ActiveTimerBody(
     val seconds by viewModel.seconds
     val timerState by viewModel.currentState
     val isBreak by viewModel.isBreak
-
 
     viewModel.onTickEvent = {
         if(!scrollState.isScrollInProgress) {

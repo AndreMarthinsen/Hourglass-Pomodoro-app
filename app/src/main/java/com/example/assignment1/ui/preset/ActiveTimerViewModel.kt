@@ -30,22 +30,10 @@ class ActiveTimerViewModel(
         longBreakLength = 25
     )
 
-//    companion object {
-//        val Factory: ViewModelProvider.Factory = viewModelFactory {
-//            initializer {
-//                MyViewModel(
-//                    timerService =
-//                )
-//            }
-//        }
-//    }
-
-
-
-
     @SuppressLint("StaticFieldLeak")
     lateinit var timerService : TimerService
 
+    var userState = mutableStateOf("")
     var seconds = mutableStateOf("00")
         private set
     var minutes = mutableStateOf("00")

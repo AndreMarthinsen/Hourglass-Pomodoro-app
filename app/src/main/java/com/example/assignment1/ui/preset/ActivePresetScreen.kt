@@ -2,19 +2,11 @@ package com.example.assignment1.ui.preset
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.Animatable
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.animation.togetherWith
-import androidx.compose.animation.with
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,10 +17,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.requiredWidth
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -36,17 +26,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,22 +38,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.blur
-import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.font.Typeface
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -77,8 +53,9 @@ import androidx.navigation.NavController
 import com.example.assignment1.PomodoroTopAppBar
 import com.example.assignment1.R
 import com.example.assignment1.services.TimerService
-import com.example.assignment1.ui.navigation.DropDownNavigation
 import com.example.assignment1.ui.navigation.NavigationDestination
+import com.example.assignment1.ui.visuals.LitContainer
+import com.example.assignment1.ui.visuals.RoundMetalButton
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 import kotlin.time.Duration
@@ -86,51 +63,6 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 
-
-@OptIn(ExperimentalAnimationApi::class)
-@Composable
-fun AnimatedCounter(
-    count: String,
-    modifier: Modifier = Modifier,
-    style: TextStyle
-) {
-    var oldCount by remember {
-        mutableStateOf(count)
-    }
-    SideEffect {
-        oldCount = count
-    }
-    Row(modifier = modifier) {
-        val countString = count
-        val oldCountString = oldCount
-        for(i in countString.indices) {
-            val oldChar = oldCountString.getOrNull(i)
-            val newChar = countString[i]
-            val char = if(oldChar == newChar) {
-                oldCountString[i]
-            } else {
-                countString[i]
-            }
-            AnimatedContent(
-                targetState = char,
-                transitionSpec = {
-                    slideInVertically { -it } togetherWith slideOutVertically { it }
-                }, label = ""
-            ) { char ->
-                Text(
-                    text = char.toString(),
-                    style = style,
-                    softWrap = false
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun SideEffect(content: () -> Unit) {
-
-}
 
 /**
  * the navigation destination for the ActivePreset (active timer) screen
@@ -176,32 +108,19 @@ fun ActiveTimerScreen(
         innerPadding ->
         viewModel.loadPreset(presetID)
         ActiveTimerBody(
-            viewModel = viewModel,
+            timerViewModel = viewModel,
             modifier = modifier
                 .padding(innerPadding)
         )
     }
 }
 
-fun getScrollFromDuration(time: Duration, maxTime: Duration, maxScroll: Int, roundingInSeconds: Int?) : Int {
-    return if(roundingInSeconds != null) {
-        ((time.toInt(DurationUnit.SECONDS).toFloat() /
-                maxTime.toInt(DurationUnit.SECONDS).toFloat()*maxScroll) / roundingInSeconds).toInt()*roundingInSeconds
-    } else {
-        ((time.toInt(DurationUnit.SECONDS).toFloat() /
-                maxTime.toInt(DurationUnit.SECONDS).toFloat()*maxScroll)).toInt()
-    }
-}
-
-fun getDurationFromScroll(scrollState: ScrollState, maxDuration: Duration, roundingInSeconds: Int) : Duration {
-    return ((((scrollState.value.toFloat() / scrollState.maxValue.toFloat()) * maxDuration.toInt(DurationUnit.SECONDS))/roundingInSeconds).roundToInt()*roundingInSeconds).seconds
-}
 
 
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun ActiveTimerBody(
-    viewModel: ActiveTimerViewModel,
+    timerViewModel: ActiveTimerViewModel,
     modifier: Modifier = Modifier
 ) {
     val scrollScope = rememberCoroutineScope()
@@ -210,18 +129,19 @@ fun ActiveTimerBody(
     val currentLightColor = remember { Animatable(Color.DarkGray) }
     val activeBreakLightColor = Color(130, 85, 255, 255)
     val activeFocusLightColor = Color(255, 224, 70, 255)
-    val hours by viewModel.hours
-    val minutes by viewModel.minutes
-    val seconds by viewModel.seconds
-    val timerState by viewModel.currentState
-    val isBreak by viewModel.isBreak
+    val hours by timerViewModel.hours
+    val minutes by timerViewModel.minutes
+    val seconds by timerViewModel.seconds
+    val timerState by timerViewModel.currentState
+    val isOnBreak by timerViewModel.isBreak
 
-    viewModel.onTickEvent = {
+
+    timerViewModel.onTickEvent = {
         if(!scrollState.isScrollInProgress) {
             scrollScope.launch {
                 scrollState.scrollTo(
                     getScrollFromDuration(
-                        viewModel.currentTimerLength.value,
+                        timerViewModel.currentTimerLength.value,
                         90.minutes,
                         scrollState.maxValue, null
                     ))
@@ -229,20 +149,20 @@ fun ActiveTimerBody(
         }
     }
 
-    viewModel.onSync = {
+    timerViewModel.onSync = {
         scrollScope.launch {
             scrollState.animateScrollTo(
                 getScrollFromDuration(
-                    viewModel.currentTimerLength.value,
+                    timerViewModel.currentTimerLength.value,
                     90.minutes,
                     scrollState.maxValue, null
                 ))
         }
     }
 
-    viewModel.onTimerFinished = {
+    timerViewModel.onTimerFinished = {
         lightScope.launch {
-            currentLightColor.animateTo(if (isBreak) {
+            currentLightColor.animateTo(if (isOnBreak) {
                 activeBreakLightColor
             } else {
                 activeFocusLightColor
@@ -250,39 +170,34 @@ fun ActiveTimerBody(
         }
     }
 
-    viewModel.refresh()
-
-
-
-
+    timerViewModel.refresh()
 
     var scrollEventToHandle by remember { mutableStateOf(false) }
-
-
+    
     //TODO: This prevents thread problems, but might want a better solution
     if(scrollState.isScrollInProgress) {
         if (!scrollEventToHandle) {
-            viewModel.pause()
+            timerViewModel.pause()
             lightScope.launch {
                 currentLightColor.animateTo(Color.DarkGray, animationSpec = tween(1000))
             }
         }
-        viewModel.currentTimerLength.value = getDurationFromScroll(
+        timerViewModel.currentTimerLength.value = getDurationFromScroll(
             scrollState, 90.minutes, 60
         )
         scrollEventToHandle = true
     } else if (scrollEventToHandle) {
         scrollEventToHandle = false
         if(scrollState.value != getScrollFromDuration(
-                viewModel.currentTimerLength.value,
+                timerViewModel.currentTimerLength.value,
                 90.minutes,
                 scrollState.maxValue, null
             )) {
-            viewModel.sync()
+            timerViewModel.sync()
         }
     }
 
-    viewModel.refresh()
+    timerViewModel.refresh()
 
     Column(
         modifier = Modifier
@@ -296,15 +211,7 @@ fun ActiveTimerBody(
         verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-//        Column() {
-//            Text("scrollEvent:$scrollEvent  syncEvent: $isSyncing")
-//            Text("${viewModel.currentTimerLength.value.toInt(DurationUnit.SECONDS).toFloat() /
-//                    90.minutes.toInt(DurationUnit.SECONDS).toFloat()}")
-//            Text("${scrollState.value.toFloat() / scrollState.maxValue.toFloat()}")
-//            Text(if(isBreak){"break"}else{"focus"})
-//        }
         Spacer(Modifier.height(50.dp))
-        // INFO DISPLAY
         Column(
             modifier = Modifier
                 .background(
@@ -323,39 +230,17 @@ fun ActiveTimerBody(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-
-            Row() {
-                LitContainer(
-                    lightColor = currentLightColor.value,
-                    height = 100f,
-                    rounding = 6.dp
-                ) {
-                    Text("${viewModel.elapsedRounds.intValue} / ${viewModel.loadedPreset.roundsInSession}")
-                }
-                Spacer(Modifier.width(100.dp))
-                LitContainer(
-                    lightColor = currentLightColor.value,
-                    height = 100f,
-                    rounding = 6.dp
-                ) {
-                    Text("${viewModel.elapsedSessions.intValue} / ${viewModel.loadedPreset.totalSessions}")
-                }
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            LitContainer(
+            ProgressDisplay(
                 lightColor = currentLightColor.value,
-                height = 300f,
-                rounding = 16.dp
-            ) {
-                Box(
-                    modifier = Modifier.padding(horizontal = 8.dp)
-                ) {
-                    TimerDisplay(hours = hours, minutes = minutes, seconds = seconds)
-                }
-
-            }
-
-            //TimerDisplay(hours, minutes, seconds)
+                maxRounds = timerViewModel.loadedPreset.roundsInSession,
+                elapsedRounds = timerViewModel.elapsedRounds.intValue,
+                maxSessions = timerViewModel.loadedPreset.totalSessions,
+                elapsedSessions = timerViewModel.elapsedSessions.intValue
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            TimerDisplay(
+                lightColor = currentLightColor.value,
+                hours = hours, minutes = minutes , seconds = seconds)
             TimerAdjustmentBar (
                 scrollState = scrollState,
                 lightColor = currentLightColor.value
@@ -371,8 +256,8 @@ fun ActiveTimerBody(
             ResetButton(
                 enabled = timerState != TimerService.State.Idle && timerState != TimerService.State.Reset,
                 onReset = {
-                    viewModel.reset()
-                    viewModel.sync()
+                    timerViewModel.reset()
+                    timerViewModel.sync()
                     lightScope.launch {
                         currentLightColor.animateTo(Color.DarkGray, animationSpec = tween(1000))
                     }
@@ -382,45 +267,30 @@ fun ActiveTimerBody(
             PlayPauseButton(
                 timerIsRunning = timerState == TimerService.State.Running,
                 onPlay = {
-                    viewModel.start()
+                    timerViewModel.start()
                     lightScope.launch {
-
                         currentLightColor.animateTo(
-                            if(isBreak) {activeBreakLightColor} else {activeFocusLightColor},
+                            if (isOnBreak) {
+                                activeBreakLightColor
+                            } else {
+                                activeFocusLightColor
+                            },
                             animationSpec = tween(1000)
                         )
-                    }
-                         },
+                    }},
                 onPause = {
-                    viewModel.pause()
+                    timerViewModel.pause()
                     lightScope.launch {
                         currentLightColor.animateTo(Color.DarkGray, animationSpec = tween(1000))
-                    }
-                          },
+                    }},
                 size = 120.dp
             )
-            Box(
-                modifier = Modifier
-                    .requiredSize(80.dp)
-                    .background(
-                        Brush.linearGradient(listOf(Color.Gray, Color.White, Color.Gray)),
-                        RoundedCornerShape(80.dp)
-                    )
-                    .border(
-                        BorderStroke(
-                            2.dp,
-                            Brush.linearGradient(listOf(Color.White, Color.DarkGray))
-                        ),
-                        RoundedCornerShape(80.dp)
-                    )
-                    .clickable {
-                        viewModel.skip()
-                        viewModel.sync()
-                    },
-                contentAlignment = Alignment.Center
-            ) {
-                Text("skip", fontWeight = FontWeight.Bold)
-            }
+            SkipButton(
+                onClick = {
+                    timerViewModel.skip()
+                    timerViewModel.sync()
+                }
+            )
         }
         Spacer(Modifier.height(30.dp))
     }
@@ -428,36 +298,32 @@ fun ActiveTimerBody(
 
 
 @Composable
-fun NumberDisplay(
-    number: String,
-    style: TextStyle
+fun ProgressDisplay(
+    lightColor: Color,
+    maxRounds: Int,
+    elapsedRounds: Int,
+    maxSessions: Int,
+    elapsedSessions: Int
 ) {
-    Box(
-        modifier = Modifier
-            .background(
-                brush = Brush.linearGradient(
-                    colors = listOf(Color.Gray, Color.White, Color.Black),
-                    end = Offset(0.0f, 300f)
-                )
-            )
-            .border(
-                BorderStroke(
-                    2.dp,
-                    Brush.linearGradient(
-                        colors = listOf(Color.DarkGray, Color.White),
-                        start = Offset(0f, 0.0f),
-                        end = Offset(200f, 100f)
-                    )
-                ),
-                RoundedCornerShape(2.dp)
-            )
-            .padding(horizontal = 2.dp)
-//            .shadow(5.dp)
-
-    ){
-        AnimatedCounter(count = number, style = style)
+    Row {
+        LitContainer(
+            lightColor = lightColor,
+            height = 100f,
+            rounding = 6.dp
+        ) {
+            Text("$elapsedRounds / $maxRounds")
+        }
+        Spacer(Modifier.width(100.dp))
+        LitContainer(
+            lightColor = lightColor,
+            height = 100f,
+            rounding = 6.dp
+        ) {
+            Text("$elapsedSessions / $maxSessions")
+        }
     }
 }
+
 
 
 /**
@@ -465,22 +331,32 @@ fun NumberDisplay(
  */
 @Composable
 fun TimerDisplay (
+    lightColor: Color,
     hours: String,
     minutes: String,
     seconds: String
 ) {
-    Text(
-        text = "$hours:$minutes:$seconds",
-        style = TextStyle(
-            fontSize = 68.sp,
-            shadow = Shadow(
-                color = Color.White,
-//                offset = Offset(10f, 10f),
-                blurRadius =20f
+    LitContainer(
+        lightColor = lightColor,
+        height = 300f,
+        rounding = 16.dp
+    ) {
+        Box(
+            modifier = Modifier.padding(horizontal = 8.dp)
+        ) {
+            Text(
+                text = "$hours:$minutes:$seconds",
+                style = TextStyle(
+                    fontSize = 68.sp,
+                    shadow = Shadow(
+                        color = Color.White,
+                        blurRadius =20f
+                    )
+                ),
+                modifier = Modifier.padding(0.dp)
             )
-        ),
-        modifier = Modifier.padding(0.dp)
-    )
+        }
+    }
 }
 
 
@@ -494,20 +370,11 @@ fun PlayPauseButton (
     onPlay: () -> Unit,
     size: Dp
 ) {
-    IconButton(
+    RoundMetalButton(
+        size = size,
         onClick = {
             if (timerIsRunning) { onPause() } else { onPlay() }
-        },
-        modifier = Modifier
-            .requiredSize(size)
-            .background(
-                Brush.linearGradient(listOf(Color.Gray, Color.White, Color.Gray)),
-                RoundedCornerShape(size)
-            )
-            .border(
-                BorderStroke(2.dp, Brush.linearGradient(listOf(Color.White, Color.DarkGray))),
-                RoundedCornerShape(size)
-            )
+        }
     ) {
         val icon = if (timerIsRunning) {
             painterResource(id = R.drawable.pause_icon)
@@ -533,49 +400,13 @@ fun PlayPauseButton (
 }
 
 @Composable
-fun LitContainer(
-    lightColor: Color,
-    height: Float,
-    rounding: Dp,
-    content: @Composable () -> Unit
+fun SkipButton(
+    onClick : () -> Unit
 ) {
-    Box(
-        modifier = Modifier
-            .background(
-                Color.LightGray,
-//                Brush.linearGradient(
-//                    colors = listOf(Color.White, Color.LightGray)
-//                ),
-                RoundedCornerShape(rounding)
-            )
-            .border(
-                BorderStroke(
-                    2.dp,
-                    Brush.linearGradient(
-                        colors = listOf(Color.DarkGray, Color.White),
-                        start = Offset(0f, 0.0f),
-                        end = Offset(0f, height)
-                    )
-                ),
-                RoundedCornerShape(rounding)
-            )
-    ) {
-        Box( // LIGHTING OVERLAY
-            modifier = Modifier
-                .background(
-                    brush = Brush.linearGradient(
-                        colors = listOf(lightColor, Color.Black.copy(alpha = 0.0f)),
-                        end = Offset(0f, height)
-                    ),
-                    alpha = 0.5f,
-                    shape = RoundedCornerShape(rounding)
-                )
-        ) {
-            content()
-        }
+    RoundMetalButton(size = 80.dp, onClick = { onClick() }) {
+        Text("skip", fontWeight = FontWeight.Bold)
     }
 }
-
 
 /**
  * Resets the current timer to it's start position.
@@ -587,21 +418,11 @@ fun ResetButton(
     onReset: () -> Unit,
     size: Dp
 ) {
-    IconButton(
-        enabled = enabled,
+    RoundMetalButton(
         onClick = {
             onReset()
         },
-        modifier = Modifier
-            .requiredSize(size)
-            .background(
-                Brush.linearGradient(listOf(Color.Gray, Color.White, Color.Gray)),
-                RoundedCornerShape(size)
-            )
-            .border(
-                BorderStroke(2.dp, Brush.linearGradient(listOf(Color.White, Color.DarkGray))),
-                RoundedCornerShape(size)
-            )
+        size = size
     ) {
         Icon(
             Icons.Filled.Refresh, "Reset button", Modifier.requiredSize(size/2)
@@ -704,5 +525,38 @@ fun MinuteMarkers (
             }
         }
     }
+}
 
+
+/**
+ * getScrollFromDuration calculates a scrollState value based on elapsed duration
+ * divided by max duration in range [0, maxScroll]
+ *
+ * @param time - elapsed duration
+ * @param maxTime - max duration
+ * @param maxScroll - max value possible for a particular scrollable composable
+ * @param roundingInSeconds - Rounds time to nearest n seconds.
+ * @return Int in range [0, maxScroll]
+ */
+fun getScrollFromDuration(time: Duration, maxTime: Duration, maxScroll: Int, roundingInSeconds: Int?) : Int {
+    return if(roundingInSeconds != null) {
+        ((time.toInt(DurationUnit.SECONDS).toFloat() /
+                maxTime.toInt(DurationUnit.SECONDS).toFloat()*maxScroll) / roundingInSeconds).toInt()*roundingInSeconds
+    } else {
+        ((time.toInt(DurationUnit.SECONDS).toFloat() /
+                maxTime.toInt(DurationUnit.SECONDS).toFloat()*maxScroll)).toInt()
+    }
+}
+
+
+/**
+ * getDurationFromScroll calculates a duration from a scrollState where the returned duration
+ * is maxDuration * (current scroll / max scroll).
+ * @param scrollState - scrollState of scrollable used to calculate duration
+ * @param maxDuration - max duration
+ * @param roundingInSeconds - rounds resulting time to nearest n seconds
+ * @return Duration in  range [0, maxDuration]
+ */
+fun getDurationFromScroll(scrollState: ScrollState, maxDuration: Duration, roundingInSeconds: Int) : Duration {
+    return ((((scrollState.value.toFloat() / scrollState.maxValue.toFloat()) * maxDuration.toInt(DurationUnit.SECONDS))/roundingInSeconds).roundToInt()*roundingInSeconds).seconds
 }

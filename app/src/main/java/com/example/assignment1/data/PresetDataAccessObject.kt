@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.Flow
  * getAll and getPreset run manually defined SQL-queries
  */
 @Dao
-interface PresetDao {
+interface PresetDataAccessObject {
     //In the case of an insert-conflict, the new item is ignored
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(preset: Preset)

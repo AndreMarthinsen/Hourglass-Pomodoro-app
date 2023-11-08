@@ -12,7 +12,7 @@ import androidx.room.RoomDatabase
 @Database(entities = [Preset::class], version = 2, exportSchema = false)
 abstract class PresetDatabase : RoomDatabase() {
 
-    abstract fun presetDao(): PresetDao
+    abstract fun presetDao(): PresetDataAccessObject
 
     companion object {
         @Volatile

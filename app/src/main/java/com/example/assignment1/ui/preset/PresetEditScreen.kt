@@ -1,7 +1,6 @@
 package com.example.assignment1.ui.preset
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
@@ -20,7 +19,6 @@ import androidx.navigation.NavController
 import com.example.assignment1.PomodoroTopAppBar
 import com.example.assignment1.ui.AppViewModelProvider
 import com.example.assignment1.ui.navigation.NavigationDestination
-import kotlinx.coroutines.handleCoroutineException
 import kotlinx.coroutines.launch
 
 object PresetEditDestination : NavigationDestination {
@@ -36,9 +34,23 @@ fun PresetEditScreen(
     navigateBack: () -> Unit,
     navController: NavController,
     modifier: Modifier = Modifier,
+    presetId: Int,
     viewModel: PresetEditViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val coroutineScope = rememberCoroutineScope()
+
+    val onSaveClick = if (presetId == 0) {
+        { coroutineScope.launch {
+            viewModel.savePreset()
+        }
+        }
+    }
+    else {
+        { coroutineScope.launch {
+            viewModel.updatePreset()
+        }
+        }
+    }
 
     Scaffold(
        topBar = {
@@ -55,13 +67,12 @@ fun PresetEditScreen(
            presetUiState = viewModel.presetUiState,
            onPresetValueChange = viewModel::updateUiState,
            onSaveClick = {
-               coroutineScope.launch{
-                   viewModel.savePreset()
-                   navigateBack()
-               }
+               onSaveClick()
+               navigateBack()
            },
            modifier = Modifier
-               .padding(innerPadding)
+               .padding(innerPadding),
+           presetId = presetId
        )
     }
 }
@@ -71,11 +82,13 @@ fun PresetEntryBody(
     presetUiState: PresetUiState,
     onPresetValueChange: (PresetDetails) -> Unit,
     onSaveClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    presetId: Int
 ) {
     Column(
         modifier.padding(top = 6.dp)
     ) {
+        Text("PresetID: $presetId")
         PresetEntryForm(
             presetDetails = presetUiState.presetDetails,
             onValueChange = onPresetValueChange,

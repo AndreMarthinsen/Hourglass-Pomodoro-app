@@ -2,6 +2,7 @@ package com.example.assignment1.ui.preset
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,9 +13,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -26,6 +31,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,6 +45,9 @@ import com.example.assignment1.PomodoroTopAppBar
 import com.example.assignment1.data.Preset
 import com.example.assignment1.ui.AppViewModelProvider
 import com.example.assignment1.ui.navigation.NavigationDestination
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 
 object PresetsDestination : NavigationDestination {
     override val route = "presets"
@@ -45,12 +57,13 @@ object PresetsDestination : NavigationDestination {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PresetsScreen(
-    navigateToPresetEdit: () -> Unit,
+    navigateToPresetEdit: (Int) -> Unit,
     modifier: Modifier = Modifier,
     navController: NavController,
     viewModel: PresetsViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val presetsUiState by viewModel.presetsUiState.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     
     Scaffold(
@@ -64,7 +77,7 @@ fun PresetsScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = navigateToPresetEdit,
+                onClick = { navigateToPresetEdit(0) },
                 shape = MaterialTheme.shapes.medium
             ) {
                 Icon(
@@ -76,9 +89,15 @@ fun PresetsScreen(
     ) {
         innerPadding ->
         PresetsBody(
-            presetsUiState.presetList,
-            modifier
-            .padding(innerPadding)
+            presetList = presetsUiState.presetList,
+            modifier = modifier
+            .padding(innerPadding),
+            onEdit = { navigateToPresetEdit(it) },
+            onDelete = {
+                coroutineScope.launch {
+                    viewModel.deletePreset(it)
+                }
+            }
         )
     }
 }
@@ -86,24 +105,34 @@ fun PresetsScreen(
 @Composable
 fun PresetsBody(
     presetList: List<Preset>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onDelete: (Int) -> Unit,
+    onEdit: (Int) -> Unit
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
     ) {
-        PresetList(presetList = presetList)
+        PresetList(
+            presetList = presetList,
+            onDelete = onDelete,
+            onEdit = onEdit)
     }
 }
 
 @Composable
 private fun PresetList(
     presetList: List<Preset>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onDelete: (Int) -> Unit,
+    onEdit: (Int) -> Unit
 ) {
     LazyColumn(modifier = modifier) {
         items(items = presetList, key = {it.id}) {preset ->
-            PresetDisplay(preset = preset)
+            PresetDisplay(
+                preset = preset,
+                onDelete = onDelete,
+                onEdit = onEdit)
         }
     }
 }
@@ -111,10 +140,15 @@ private fun PresetList(
 @Composable
 private fun PresetDisplay(
     preset: Preset,
-    onExpandInteraction: ()->Unit = {},
     onStart: ()->Unit = {},
     modifier: Modifier = Modifier,
+    onDelete: (Int) -> Unit,
+    onEdit: (Int) -> Unit
 ) {
+    var isExpanded by remember {
+        mutableStateOf(false)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -133,16 +167,46 @@ private fun PresetDisplay(
                 "Timer Icon"
             )
             Text(preset.name)
-            IconButton(
-                enabled = true,
-                onClick = onExpandInteraction,
-                content = {
-                    Icon(
-                        Icons.Filled.MoreVert,
-                        "Expand options"
+            Box {
+                IconButton(
+                    enabled = true,
+                    onClick = {isExpanded = !isExpanded},
+                    content = {
+                        Icon(
+                            Icons.Filled.MoreVert,
+                            "Presets options"
+                        )
+                    }
+                )
+                DropdownMenu(
+                    expanded = isExpanded,
+                    onDismissRequest = { isExpanded = false }
+
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Edit preset")},
+                        onClick = { onEdit(preset.id) },
+                        trailingIcon = {
+                            Icon(
+                                Icons.Filled.Edit,
+                                "Edit preset"
+                            )
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Delete preset") },
+                        onClick = {
+                            onDelete(preset.id)
+                        },
+                        trailingIcon = {
+                            Icon(
+                                Icons.Filled.Delete,
+                                "Delete Preset"
+                            )
+                        }
                     )
                 }
-            )
+            }
         }
         Spacer(
             modifier = Modifier

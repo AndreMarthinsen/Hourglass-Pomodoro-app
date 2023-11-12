@@ -5,8 +5,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.assignment1.data.Preset
 import com.example.assignment1.data.PresetRepository
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 class PresetEditViewModel(
     savedStateHandle: SavedStateHandle,
@@ -15,6 +19,20 @@ class PresetEditViewModel(
     var presetUiState by mutableStateOf(PresetUiState())
         private set
 
+    private val presetId: Int = savedStateHandle[PresetEditDestination.presetIdArg]!!
+    init {
+        if (presetId == 0) {
+            presetUiState = PresetUiState()
+        }
+        else {
+            viewModelScope.launch {
+                presetUiState = presetRepository.getPresetStream(presetId)
+                    .filterNotNull()
+                    .first()
+                    .toPresetUiState(true)
+            }
+        }
+    }
     //private val presetId: Int = checkNotNull(savedStateHandle[PresetEditDestination.presetIdArg])
 
     fun updateUiState(presetDetails: PresetDetails) {
@@ -25,6 +43,12 @@ class PresetEditViewModel(
     suspend fun savePreset() {
         if (validateInput()) {
             presetRepository.insertPreset(presetUiState.presetDetails.toPreset())
+        }
+    }
+
+    suspend fun updatePreset() {
+        if (validateInput()) {
+            presetRepository.updatePreset(presetUiState.presetDetails.toPreset())
         }
     }
 
@@ -55,7 +79,7 @@ data class PresetDetails(
     val totalLength: String = ""
 )
 
-//TODO: check if explicitly initializing fields is necessary
+//TODO: check if explicitly initializing fields is necessary, error handling for non-int values
 fun PresetDetails.toPreset() : Preset = Preset(
     id = id,
     name = name,

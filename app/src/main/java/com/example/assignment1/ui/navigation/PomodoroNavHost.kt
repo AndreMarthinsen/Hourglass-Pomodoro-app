@@ -57,15 +57,19 @@ fun PomodoroNavHost(
                 presetID = backStackEntry.arguments?.getInt("presetId")?:0
             )
         }
-        composable(route = PresetEditDestination.route) {
+        composable(
+            route = PresetEditDestination.routeWithArgs,
+            arguments = listOf(navArgument("presetId") {type = NavType.IntType})
+        ) {
             PresetEditScreen(
                 navigateBack = { navController.popBackStack() },
-                navController = navController
+                navController = navController,
+                presetId = it.arguments?.getInt("presetId")?:0,
             )
         }
         composable(route = PresetsDestination.route) {
             PresetsScreen(
-                navigateToPresetEdit = { navController.navigate(PresetEditDestination.route)},
+                navigateToPresetEdit = { navController.navigate("${PresetEditDestination.route}/${it}")},
                 navController = navController
             )
         }

@@ -1,11 +1,21 @@
 package com.example.assignment1.ui.preset
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Application
+import android.app.PendingIntent
+import android.app.PendingIntent.getActivity
+import android.app.TaskStackBuilder
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.media.MediaPlayer
+import android.os.SystemClock
 import android.util.Log
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.app.ActivityCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -18,8 +28,56 @@ import kotlinx.coroutines.flow.first
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import androidx.lifecycle.viewModelScope
+import com.example.assignment1.PomodoroApplication
 import com.example.assignment1.R
+import com.google.android.gms.common.internal.safeparcel.SafeParcelableSerializer
+import com.google.android.gms.location.ActivityRecognition
+import com.google.android.gms.location.ActivityTransition
+import com.google.android.gms.location.ActivityTransitionEvent
+import com.google.android.gms.location.ActivityTransitionRequest
+import com.google.android.gms.location.ActivityTransitionResult
+import com.google.android.gms.location.DetectedActivity
 import kotlinx.coroutines.launch
+import kotlin.time.DurationUnit
+
+object BonusMultiplierManager {
+    private const val ACTIVE_MULTIPLIER = 2 // Multiplier for active activities
+    private const val DEFAULT_MULTIPLIER = 1 // Default multiplier
+
+    private var currentMultiplier: Int = DEFAULT_MULTIPLIER
+
+    fun setMultiplier(isActive: Boolean) {
+        currentMultiplier = if (isActive) ACTIVE_MULTIPLIER else DEFAULT_MULTIPLIER
+    }
+
+    fun getMultiplier(): Int {
+        return currentMultiplier
+    }
+}
+
+val BonusActivities = listOf(
+    DetectedActivity.WALKING,
+    DetectedActivity.RUNNING,
+    DetectedActivity.ON_BICYCLE,
+    DetectedActivity.ON_FOOT
+)
+class ActivityTransitionReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context?, intent: Intent?) {
+        Log.d("ActivityTransition", "Received + ${intent.toString()}")
+        if (intent != null && ActivityTransitionResult.hasResult(intent)) {
+            val result = ActivityTransitionResult.extractResult(intent)
+            if (result != null && !result.transitionEvents.isEmpty()) {
+                // Get the latest activity transition event
+                val latestEvent = result.transitionEvents.last()
+
+                // Determine if the user is active (e.g., walking or cycling)
+                val isActive = BonusActivities.contains(latestEvent.activityType) &&
+                        latestEvent.transitionType == ActivityTransition.ACTIVITY_TRANSITION_ENTER
+                BonusMultiplierManager.setMultiplier(isActive)
+            }
+        }
+    }
+}
 
 class ActiveTimerViewModel(
     private val presetRepository: PresetRepository, application: Application
@@ -33,6 +91,8 @@ class ActiveTimerViewModel(
         breakLength = 5,
         longBreakLength = 25
     )
+
+    val points = mutableStateOf(0)
 
     private val dingSound: MediaPlayer = MediaPlayer.create(this.getApplication(), R.raw.timer_ding)
 
@@ -87,6 +147,29 @@ class ActiveTimerViewModel(
         isSetup = true
     }
 
+    private fun sendFakeTransitionEvent() {
+        val intent = Intent(this.getApplication(), ActivityTransitionReceiver::class.java)
+        val events: ArrayList<ActivityTransitionEvent> = arrayListOf()
+
+        // create fake events
+        events.add(
+            ActivityTransitionEvent(
+                DetectedActivity.ON_BICYCLE,
+                ActivityTransition.ACTIVITY_TRANSITION_ENTER,
+                SystemClock.elapsedRealtimeNanos()
+            )
+        )
+
+        // finally, serialize and send
+        val result = ActivityTransitionResult(events)
+        SafeParcelableSerializer.serializeToIntentExtra(
+            result,
+            intent,
+            "com.google.android.location.internal.EXTRA_ACTIVITY_TRANSITION_RESULT"
+        )
+        this.getApplication<PomodoroApplication>().sendBroadcast(intent)
+    }
+
     fun start () {
         if(!isSetup) {
             setup()
@@ -96,9 +179,15 @@ class ActiveTimerViewModel(
             onTickEvent = {
 //                this.currentTimerLength.value = timerService.currentTimeInSeconds.value
                 onTickEvent()
+                this.sendFakeTransitionEvent()
+                if(currentTimerLength.value.toInt(DurationUnit.SECONDS) % 5 == 0) {
+                    points.value += 1 * BonusMultiplierManager.getMultiplier()
+                }
                 updateTimeUnits()
             },
             onTimerFinish = {
+                //TODO Skip causes onTimerFinished to be called repeatedly
+                //TODO Tilting device causes interface to lose track of state
                 onTimerFinished()
                 dingSound.start()
                 this.progressTimer()

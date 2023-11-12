@@ -213,7 +213,11 @@ fun ActiveTimerBody(
         verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
         Spacer(Modifier.height(50.dp))
+        Box(Modifier.background(color = Color.White, shape = RoundedCornerShape(16.dp))) {
+            Text(timerViewModel.points.value.toString(), fontSize = 64.sp, fontWeight = FontWeight.Bold)
+        }
         Column(
             modifier = Modifier
                 .background(

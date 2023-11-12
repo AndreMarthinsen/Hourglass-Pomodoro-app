@@ -58,6 +58,7 @@ object PresetsDestination : NavigationDestination {
 @Composable
 fun PresetsScreen(
     navigateToPresetEdit: (Int) -> Unit,
+    navigateToActivePreset: (Int) -> Unit,
     modifier: Modifier = Modifier,
     navController: NavController,
     viewModel: PresetsViewModel = viewModel(factory = AppViewModelProvider.Factory)
@@ -97,7 +98,8 @@ fun PresetsScreen(
                 coroutineScope.launch {
                     viewModel.deletePreset(it)
                 }
-            }
+            },
+            onStart = { navigateToActivePreset(it) }
         )
     }
 }
@@ -107,7 +109,8 @@ fun PresetsBody(
     presetList: List<Preset>,
     modifier: Modifier = Modifier,
     onDelete: (Int) -> Unit,
-    onEdit: (Int) -> Unit
+    onEdit: (Int) -> Unit,
+    onStart: (Int) -> Unit
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -116,7 +119,8 @@ fun PresetsBody(
         PresetList(
             presetList = presetList,
             onDelete = onDelete,
-            onEdit = onEdit)
+            onEdit = onEdit,
+            onStart = onStart)
     }
 }
 
@@ -125,14 +129,16 @@ private fun PresetList(
     presetList: List<Preset>,
     modifier: Modifier = Modifier,
     onDelete: (Int) -> Unit,
-    onEdit: (Int) -> Unit
+    onEdit: (Int) -> Unit,
+    onStart: (Int) -> Unit
 ) {
     LazyColumn(modifier = modifier) {
         items(items = presetList, key = {it.id}) {preset ->
             PresetDisplay(
                 preset = preset,
                 onDelete = onDelete,
-                onEdit = onEdit)
+                onEdit = onEdit,
+                onStart = onStart)
         }
     }
 }
@@ -140,7 +146,7 @@ private fun PresetList(
 @Composable
 private fun PresetDisplay(
     preset: Preset,
-    onStart: ()->Unit = {},
+    onStart: (Int) -> Unit,
     modifier: Modifier = Modifier,
     onDelete: (Int) -> Unit,
     onEdit: (Int) -> Unit
@@ -224,7 +230,7 @@ private fun PresetDisplay(
             Text("" + preset.focusLength + " / " + preset.breakLength + "")
             Text("Sessions: " + preset.totalSessions)
             IconButton(
-                onClick = onStart,
+                onClick = { onStart(preset.id) },
                 content = {
                     Row(
                         verticalAlignment = Alignment.CenterVertically

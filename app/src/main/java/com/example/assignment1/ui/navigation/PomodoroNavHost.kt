@@ -70,6 +70,7 @@ fun PomodoroNavHost(
         composable(route = PresetsDestination.route) {
             PresetsScreen(
                 navigateToPresetEdit = { navController.navigate("${PresetEditDestination.route}/${it}")},
+                navigateToActivePreset = {navController.navigate("${ActivePresetDestination.route}/${it}")},
                 navController = navController
             )
         }

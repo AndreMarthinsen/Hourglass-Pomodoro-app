@@ -354,7 +354,7 @@ fun TimerDisplay (
             Text(
                 text = "$hours:$minutes:$seconds",
                 style = TextStyle(
-                    fontSize = 68.sp,
+                    fontSize = 60.sp,
                     shadow = Shadow(
                         color = Color.White,
                         blurRadius =20f

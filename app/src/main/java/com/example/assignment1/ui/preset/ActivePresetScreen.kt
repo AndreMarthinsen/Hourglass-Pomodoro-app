@@ -217,7 +217,7 @@ fun ActiveTimerBody(
         Spacer(Modifier.height(50.dp))
         Column(Modifier.background(color = Color.White, shape = RoundedCornerShape(16.dp))) {
             Text(timerViewModel.currentState.value.toString(), fontSize = 32.sp, fontWeight = FontWeight.Bold)
-            Text("Activity: " + BonusMultiplierManager.currentActivityTransitionResult.toString(), fontSize = 32.sp, fontWeight = FontWeight.Bold)
+            Text("Activity: " + BonusMultiplierManager.latestActivity.toString(), fontSize = 32.sp, fontWeight = FontWeight.Bold)
         }
         Column(
             modifier = Modifier

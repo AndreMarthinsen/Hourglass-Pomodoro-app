@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.first
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import androidx.lifecycle.viewModelScope
+import com.example.assignment1.ActivityTransitionReceiver
 import com.example.assignment1.PomodoroApplication
 import com.example.assignment1.R
 import com.google.android.gms.common.internal.safeparcel.SafeParcelableSerializer
@@ -43,7 +44,7 @@ import kotlin.time.DurationUnit
 object BonusMultiplierManager {
     private const val ACTIVE_MULTIPLIER = 2 // Multiplier for active activities
     private const val DEFAULT_MULTIPLIER = 1 // Default multiplier
-    public var currentActivityTransitionResult: ActivityTransitionResult? = null
+    public var latestActivity: Int = DetectedActivity.STILL
 
     private var currentMultiplier: Int = DEFAULT_MULTIPLIER
 
@@ -62,24 +63,7 @@ val BonusActivities = listOf(
     DetectedActivity.ON_BICYCLE,
     DetectedActivity.ON_FOOT
 )
-class ActivityTransitionReceiver : BroadcastReceiver() {
-    override fun onReceive(context: Context?, intent: Intent?) {
-        Log.d("ActivityTransition", "Received + ${intent.toString()}")
-        if (intent != null && ActivityTransitionResult.hasResult(intent)) {
-            val result = ActivityTransitionResult.extractResult(intent)
-            if (result != null && !result.transitionEvents.isEmpty()) {
-                // Get the latest activity transition event
-                val latestEvent = result.transitionEvents.last()
 
-                // Determine if the user is active (e.g., walking or cycling)
-                val isActive = BonusActivities.contains(latestEvent.activityType) &&
-                        latestEvent.transitionType == ActivityTransition.ACTIVITY_TRANSITION_ENTER
-                BonusMultiplierManager.setMultiplier(isActive)
-                BonusMultiplierManager.currentActivityTransitionResult = result
-            }
-        }
-    }
-}
 
 class ActiveTimerViewModel(
     private val presetRepository: PresetRepository, application: Application
@@ -93,6 +77,29 @@ class ActiveTimerViewModel(
         breakLength = 5,
         longBreakLength = 25
     )
+
+    private fun sendFakeTransitionEvent() {
+        val intent = Intent(this.getApplication(), ActivityTransitionReceiver::class.java)
+        val events: ArrayList<ActivityTransitionEvent> = arrayListOf()
+
+        // create fake events
+        events.add(
+            ActivityTransitionEvent(
+                DetectedActivity.ON_BICYCLE,
+                ActivityTransition.ACTIVITY_TRANSITION_ENTER,
+                SystemClock.elapsedRealtimeNanos()
+            )
+        )
+
+        // finally, serialize and send
+        val result = ActivityTransitionResult(events)
+        SafeParcelableSerializer.serializeToIntentExtra(
+            result,
+            intent,
+            "com.google.android.location.internal.EXTRA_ACTIVITY_TRANSITION_RESULT"
+        )
+        this.getApplication<PomodoroApplication>().sendBroadcast(intent)
+    }
 
     val points = mutableIntStateOf(0)
 
@@ -157,6 +164,7 @@ class ActiveTimerViewModel(
         }
         timerService.start(
             onTickEvent = {
+                //sendFakeTransitionEvent()
                 onTickEvent()
                 if(currentTimerLength.value.toInt(DurationUnit.SECONDS) % 5 == 0) {
                     points.value += 1 * BonusMultiplierManager.getMultiplier()

@@ -25,7 +25,6 @@ import com.example.assignment1.ui.theme.ProjectTheme
 import com.example.assignment1.services.TimerService
 import androidx.navigation.compose.rememberNavController
 import com.example.assignment1.ui.navigation.PomodoroNavHost
-import com.example.assignment1.ui.preset.ActivityTransitionReceiver
 import com.google.android.gms.common.internal.safeparcel.SafeParcelableSerializer
 import com.google.android.gms.location.ActivityRecognition
 import com.google.android.gms.location.ActivityTransition
@@ -122,9 +121,9 @@ class MainActivity : ComponentActivity() {
         val request = ActivityTransitionRequest(transitions)
         val intent = Intent(this.application, ActivityTransitionReceiver::class.java)
 
-        val pending = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+        val pending = PendingIntent.getBroadcast(this.application, 0, intent, PendingIntent.FLAG_IMMUTABLE)
         var permission = ActivityCompat.checkSelfPermission(
-                this,
+                this.application,
                 Manifest.permission.ACTIVITY_RECOGNITION
             )
 

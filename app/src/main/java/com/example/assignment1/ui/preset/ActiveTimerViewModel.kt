@@ -43,6 +43,7 @@ import kotlin.time.DurationUnit
 object BonusMultiplierManager {
     private const val ACTIVE_MULTIPLIER = 2 // Multiplier for active activities
     private const val DEFAULT_MULTIPLIER = 1 // Default multiplier
+    public var currentActivityTransitionResult: ActivityTransitionResult? = null
 
     private var currentMultiplier: Int = DEFAULT_MULTIPLIER
 
@@ -74,6 +75,7 @@ class ActivityTransitionReceiver : BroadcastReceiver() {
                 val isActive = BonusActivities.contains(latestEvent.activityType) &&
                         latestEvent.transitionType == ActivityTransition.ACTIVITY_TRANSITION_ENTER
                 BonusMultiplierManager.setMultiplier(isActive)
+                BonusMultiplierManager.currentActivityTransitionResult = result
             }
         }
     }
@@ -83,7 +85,7 @@ class ActiveTimerViewModel(
     private val presetRepository: PresetRepository, application: Application
 ) : AndroidViewModel(application) {
     private val defaultPreset = Preset(
-        id = 0,
+        id = -10000,
         name = "default",
         roundsInSession = 3,
         totalSessions = 2,
@@ -92,7 +94,7 @@ class ActiveTimerViewModel(
         longBreakLength = 25
     )
 
-    val points = mutableStateOf(0)
+    val points = mutableIntStateOf(0)
 
     private val dingSound: MediaPlayer = MediaPlayer.create(this.getApplication(), R.raw.timer_ding)
 
@@ -170,6 +172,7 @@ class ActiveTimerViewModel(
         this.getApplication<PomodoroApplication>().sendBroadcast(intent)
     }
 
+
     fun start () {
         if(!isSetup) {
             setup()
@@ -200,6 +203,7 @@ class ActiveTimerViewModel(
         )
     }
 
+
     private fun updateTimeUnits() {
         this.currentTimerLength.value.toComponents { hours, minutes, seconds, _ ->
             this@ActiveTimerViewModel.hours.value = hours.toInt().pad()
@@ -208,22 +212,27 @@ class ActiveTimerViewModel(
         }
     }
 
-    fun loadPreset(id: Int) {
-        presetRepository.getPresetStream(id).let { flow ->
-            viewModelScope.launch {
-                try {
 
-                    flow.first {preset ->
-                        if(preset != null) {
-                            preset.id == id
-                        } else {
-                            false
+    fun loadPreset(id: Int) {
+        if(loadedPreset.id != id) {
+            Log.d("Load preset", "Loading preset with id $id: old id ${loadedPreset.id}")
+            presetRepository.getPresetStream(id).let { flow ->
+                viewModelScope.launch {
+                    try {
+                        flow.first { preset ->
+                            if(preset != null) {
+                                preset.id == id
+                            } else {
+                                false
+                            }
+                        }?.run {
+                            Log.d("DB Access with id $id:", "Successfully loaded $this");
+                            loadedPreset = this
+                            this@ActiveTimerViewModel.setup();
                         }
-                    }?.run {
-                        loadedPreset = this
+                    } catch (error: Error) {
+                        Log.d("DB Access with id $id:", error.toString())
                     }
-                } catch (error: Error) {
-                    Log.d("DB Access with id $id:", error.toString())
                 }
             }
         }

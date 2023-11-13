@@ -37,13 +37,12 @@ class TimerService : Service() {
         fun getService(): TimerService = this@TimerService
     }
 
-    // Timer object that
     private lateinit var timer: Timer
     private val binder = TimerBinder()
     private var targetTime = 0.seconds
 
 
-
+    @Volatile
     var currentTimeInSeconds =  mutableStateOf (Duration.ZERO)
 
     var seconds = mutableStateOf("00")

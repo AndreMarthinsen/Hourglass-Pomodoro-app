@@ -2,6 +2,7 @@ package com.example.assignment1.ui.preset
 
 import android.annotation.SuppressLint
 import android.media.MediaPlayer
+import android.util.Log
 import androidx.compose.animation.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
@@ -213,10 +214,10 @@ fun ActiveTimerBody(
         verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
         Spacer(Modifier.height(50.dp))
-        Box(Modifier.background(color = Color.White, shape = RoundedCornerShape(16.dp))) {
-            Text(timerViewModel.points.value.toString(), fontSize = 64.sp, fontWeight = FontWeight.Bold)
+        Column(Modifier.background(color = Color.White, shape = RoundedCornerShape(16.dp))) {
+            Text(timerViewModel.currentState.value.toString(), fontSize = 32.sp, fontWeight = FontWeight.Bold)
+            Text("Activity: " + BonusMultiplierManager.currentActivityTransitionResult.toString(), fontSize = 32.sp, fontWeight = FontWeight.Bold)
         }
         Column(
             modifier = Modifier

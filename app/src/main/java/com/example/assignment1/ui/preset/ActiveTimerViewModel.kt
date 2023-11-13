@@ -149,29 +149,6 @@ class ActiveTimerViewModel(
         isSetup = true
     }
 
-    private fun sendFakeTransitionEvent() {
-        val intent = Intent(this.getApplication(), ActivityTransitionReceiver::class.java)
-        val events: ArrayList<ActivityTransitionEvent> = arrayListOf()
-
-        // create fake events
-        events.add(
-            ActivityTransitionEvent(
-                DetectedActivity.ON_BICYCLE,
-                ActivityTransition.ACTIVITY_TRANSITION_ENTER,
-                SystemClock.elapsedRealtimeNanos()
-            )
-        )
-
-        // finally, serialize and send
-        val result = ActivityTransitionResult(events)
-        SafeParcelableSerializer.serializeToIntentExtra(
-            result,
-            intent,
-            "com.google.android.location.internal.EXTRA_ACTIVITY_TRANSITION_RESULT"
-        )
-        this.getApplication<PomodoroApplication>().sendBroadcast(intent)
-    }
-
 
     fun start () {
         if(!isSetup) {
@@ -180,9 +157,7 @@ class ActiveTimerViewModel(
         }
         timerService.start(
             onTickEvent = {
-//                this.currentTimerLength.value = timerService.currentTimeInSeconds.value
                 onTickEvent()
-                this.sendFakeTransitionEvent()
                 if(currentTimerLength.value.toInt(DurationUnit.SECONDS) % 5 == 0) {
                     points.value += 1 * BonusMultiplierManager.getMultiplier()
                 }
@@ -215,7 +190,7 @@ class ActiveTimerViewModel(
 
     fun loadPreset(id: Int) {
         if(loadedPreset.id != id) {
-            Log.d("Load preset", "Loading preset with id $id: old id ${loadedPreset.id}")
+            isSetup = false
             presetRepository.getPresetStream(id).let { flow ->
                 viewModelScope.launch {
                     try {
@@ -228,7 +203,7 @@ class ActiveTimerViewModel(
                         }?.run {
                             Log.d("DB Access with id $id:", "Successfully loaded $this");
                             loadedPreset = this
-                            this@ActiveTimerViewModel.setup();
+                            this@ActiveTimerViewModel.setup()
                         }
                     } catch (error: Error) {
                         Log.d("DB Access with id $id:", error.toString())

@@ -32,8 +32,8 @@
             </intent-filter>
         </activity>
         <receiver android:name=".ActivityTransitionReceiver"
-            android:exported="true"
-            android:permission="TODO">
+            android:enabled="true"
+            android:exported="false">
         </receiver>
     </application>
 

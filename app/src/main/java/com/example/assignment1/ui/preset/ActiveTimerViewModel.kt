@@ -44,7 +44,7 @@ import kotlin.time.DurationUnit
 object BonusMultiplierManager {
     private const val ACTIVE_MULTIPLIER = 2 // Multiplier for active activities
     private const val DEFAULT_MULTIPLIER = 1 // Default multiplier
-    public var latestActivity: Int = DetectedActivity.STILL
+    public var latestActivity: Int = -1
 
     private var currentMultiplier: Int = DEFAULT_MULTIPLIER
 
@@ -79,7 +79,7 @@ class ActiveTimerViewModel(
     )
 
     private fun sendFakeTransitionEvent() {
-        val intent = Intent(this.getApplication(), ActivityTransitionReceiver::class.java)
+        val intent = Intent(this.getApplication<PomodoroApplication>(), ActivityTransitionReceiver::class.java)
         val events: ArrayList<ActivityTransitionEvent> = arrayListOf()
 
         // create fake events
@@ -164,7 +164,7 @@ class ActiveTimerViewModel(
         }
         timerService.start(
             onTickEvent = {
-                //sendFakeTransitionEvent()
+//                sendFakeTransitionEvent()
                 onTickEvent()
                 if(currentTimerLength.value.toInt(DurationUnit.SECONDS) % 5 == 0) {
                     points.value += 1 * BonusMultiplierManager.getMultiplier()

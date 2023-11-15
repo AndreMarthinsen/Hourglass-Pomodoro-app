@@ -20,7 +20,8 @@ object AppViewModelProvider {
         }
         initializer {
             PresetsViewModel(
-                pomodoroApplication().container.presetRepository
+                pomodoroApplication().container.presetRepository,
+                pomodoroApplication().container.unlockablesRepository
             )
         }
         initializer {

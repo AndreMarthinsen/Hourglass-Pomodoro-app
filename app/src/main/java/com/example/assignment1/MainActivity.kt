@@ -33,7 +33,6 @@ import com.google.android.gms.location.DetectedActivity
 import androidx.compose.runtime.*
 import com.example.assignment1.recievers.ActivityTransitionReceiver
 
-
 @ExperimentalAnimationApi
 class MainActivity : ComponentActivity() {
     private var isBound = mutableStateOf(false)
@@ -54,7 +53,11 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-
+    /**
+     * createTransitionList creates a list of ActivityTransitions
+     *
+     * @return List<ActivityTransition> - A list of ActivityTransitions
+     */
     private fun createTransitionList(): List<ActivityTransition> {
         val transitions = listOf(
             DetectedActivity.WALKING,
@@ -71,7 +74,6 @@ class MainActivity : ComponentActivity() {
                     .build()
             }
     }
-
 
     @RequiresApi(Build.VERSION_CODES.Q)
     fun registerForActivityDetectionResult() {
@@ -112,8 +114,8 @@ class MainActivity : ComponentActivity() {
                 Manifest.permission.ACTIVITY_RECOGNITION
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            val task = this.activityTransitionClient//.requestActivityTransitionUpdates(request, pending)
-                .requestActivityUpdates(1000, pending);
+            val task = this.activityTransitionClient.requestActivityTransitionUpdates(request, pending)
+//                .requestActivityUpdates(1000, pending);
             task.addOnSuccessListener {
                 Log.d("ActivityTransition", "Success")
             }

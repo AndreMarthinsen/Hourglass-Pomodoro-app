@@ -10,6 +10,14 @@ import com.google.android.gms.location.ActivityTransition
 import com.google.android.gms.location.ActivityRecognitionResult
 import com.google.android.gms.location.ActivityTransitionResult
 
+
+/**
+ * ActivityTransitionReceiver is a broadcast reciever intended for use with
+ * the Google Play Activity Recognition API. It is used to detect when the user
+ * changes activity state, such as walking, running, or biking.
+ *
+ * @see BonusMultiplierManager - Used to set the multiplier for the timer based on activity
+ */
 class ActivityTransitionReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         intent?.extras?.keySet()?.forEach {
@@ -19,10 +27,8 @@ class ActivityTransitionReceiver : BroadcastReceiver() {
         if (intent != null  && ActivityTransitionResult.hasResult(intent)) {
             val result = ActivityTransitionResult.extractResult(intent)
             if (result != null && result.transitionEvents.isNotEmpty()) {
-                // Get the latest activity transition event
                 val latestEvent = result.transitionEvents.last()
                 Log.d("ActivityTransition", "Received ${latestEvent.activityType}")
-                // Determine if the user is active (e.g., walking or cycling)
                 val isActive = BonusActivities.contains(latestEvent.activityType) &&
                         latestEvent.transitionType == ActivityTransition.ACTIVITY_TRANSITION_ENTER
                 BonusMultiplierManager.setMultiplier(isActive)
@@ -30,11 +36,9 @@ class ActivityTransitionReceiver : BroadcastReceiver() {
             }
         } else if (intent != null && ActivityRecognitionResult.hasResult(intent)) {
             val result = ActivityRecognitionResult.extractResult(intent)
-            // Get the latest activity transition event
             if(result != null) {
                 val latestEvent = result.mostProbableActivity
                 Log.d("ActivityTransition", "Received ${latestEvent.type} with confidence ${latestEvent.confidence}")
-                // Determine if the user is active (e.g., walking or cycling)
                 val isActive = BonusActivities.contains(latestEvent.type)
                 BonusMultiplierManager.setMultiplier(isActive)
                 BonusMultiplierManager.latestActivity = latestEvent.type

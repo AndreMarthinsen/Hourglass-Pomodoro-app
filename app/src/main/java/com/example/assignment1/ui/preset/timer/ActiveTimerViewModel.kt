@@ -65,29 +65,6 @@ class ActiveTimerViewModel(
         longBreakLength = 25
     )
 
-    private fun sendFakeTransitionEvent() {
-        val intent = Intent(this.getApplication<PomodoroApplication>(), ActivityTransitionReceiver::class.java)
-        val events: ArrayList<ActivityTransitionEvent> = arrayListOf()
-
-        // create fake events
-        events.add(
-            ActivityTransitionEvent(
-                DetectedActivity.ON_BICYCLE,
-                ActivityTransition.ACTIVITY_TRANSITION_ENTER,
-                SystemClock.elapsedRealtimeNanos()
-            )
-        )
-
-        // finally, serialize and send
-        val result = ActivityTransitionResult(events)
-        SafeParcelableSerializer.serializeToIntentExtra(
-            result,
-            intent,
-            "com.google.android.location.internal.EXTRA_ACTIVITY_TRANSITION_RESULT"
-        )
-        this.getApplication<PomodoroApplication>().sendBroadcast(intent)
-    }
-
     val points = mutableIntStateOf(0)
 
     private val dingSound: MediaPlayer = MediaPlayer.create(this.getApplication(), R.raw.timer_ding)

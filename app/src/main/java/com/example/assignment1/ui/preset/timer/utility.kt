@@ -1,13 +1,29 @@
 package com.example.assignment1.ui.preset.timer
 
+import android.annotation.SuppressLint
+import android.content.Context
+import android.content.Intent
+import android.os.SystemClock
 import androidx.compose.foundation.ScrollState
+import com.example.assignment1.PomodoroApplication
+import com.example.assignment1.recievers.ActivityTransitionReceiver
+import com.google.android.gms.common.internal.safeparcel.SafeParcelableSerializer
+import com.google.android.gms.location.ActivityTransition
+import com.google.android.gms.location.ActivityTransitionEvent
+import com.google.android.gms.location.ActivityTransitionResult
+import com.google.android.gms.location.DetectedActivity
 import kotlin.math.roundToInt
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 
 
-
+/**
+ * detectedActivityToString converts a detected activity int to a string
+ *
+ * @param activity - detected activity int
+ * @return String representation of activity
+ */
 fun detectedActivityToString(activity: Int) : String{
     return when(activity) {
         0 -> "IN_VEHICLE"
@@ -55,4 +71,28 @@ fun getScrollFromDuration(time: Duration, maxTime: Duration, maxScroll: Int, rou
 fun getDurationFromScroll(scrollState: ScrollState, maxDuration: Duration, roundingInSeconds: Int) : Duration {
     return ((((scrollState.value.toFloat() / scrollState.maxValue.toFloat()) * maxDuration.toInt(
         DurationUnit.SECONDS))/roundingInSeconds).roundToInt()*roundingInSeconds).seconds
+}
+
+@SuppressLint("VisibleForTests")
+fun sendFakeTransitionEvent(context: Context, activity: Int) {
+    val intent = Intent(context, ActivityTransitionReceiver::class.java)
+    val events: ArrayList<ActivityTransitionEvent> = arrayListOf()
+
+    // create fake events
+    events.add(
+        ActivityTransitionEvent(
+            activity,
+            ActivityTransition.ACTIVITY_TRANSITION_ENTER,
+            SystemClock.elapsedRealtimeNanos()
+        )
+    )
+
+    // finally, serialize and send
+    val result = ActivityTransitionResult(events)
+    SafeParcelableSerializer.serializeToIntentExtra(
+        result,
+        intent,
+        "com.google.android.location.internal.EXTRA_ACTIVITY_TRANSITION_RESULT"
+    )
+    context.sendBroadcast(intent)
 }

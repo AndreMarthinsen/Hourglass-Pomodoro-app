@@ -66,6 +66,34 @@ fun LitContainer(
     }
 }
 
+@Composable
+fun MetallicContainer(
+    height: Float,
+    rounding: Dp,
+    content: @Composable () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .background(
+                Color.LightGray,
+                RoundedCornerShape(rounding)
+            )
+            .border(
+                BorderStroke(
+                    2.dp,
+                    Brush.linearGradient(
+                        colors = listOf(Color.DarkGray, Color.White),
+                        start = Offset(0f, 0.0f),
+                        end = Offset(0f, height)
+                    )
+                ),
+                RoundedCornerShape(rounding)
+            )
+    ) {
+        content()
+    }
+}
+
 
 
 @Composable

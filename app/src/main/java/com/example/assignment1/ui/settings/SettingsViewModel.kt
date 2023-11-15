@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.assignment1.data.Settings
 import com.example.assignment1.data.SettingsRepository
-import com.example.assignment1.ui.navbar.NavbarViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -22,8 +21,12 @@ class SettingsViewModel (
                 initialValue = Settings(0,false)
             )
 
-    suspend fun setDisableCoinWarnings(enabled: Boolean) {
+    suspend fun setCoinWarningsEnabled(enabled: Boolean) {
         settingsRepository.updateCoinWarning(enabled)
+    }
+
+    fun setActivityDetectionEnabled(enabled: Boolean) {
+
     }
 
 }

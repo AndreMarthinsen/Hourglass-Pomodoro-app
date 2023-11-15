@@ -33,6 +33,7 @@ import com.google.android.gms.location.DetectedActivity
 import androidx.compose.runtime.*
 import com.example.assignment1.recievers.ActivityTransitionReceiver
 
+
 @ExperimentalAnimationApi
 class MainActivity : ComponentActivity() {
     private var isBound = mutableStateOf(false)

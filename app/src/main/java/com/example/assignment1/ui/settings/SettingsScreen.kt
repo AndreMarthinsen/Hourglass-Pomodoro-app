@@ -3,7 +3,9 @@ package com.example.assignment1.ui.settings
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.collectAsState
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -19,6 +21,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -27,6 +31,8 @@ import com.example.assignment1.R
 import com.example.assignment1.data.Settings
 import com.example.assignment1.ui.AppViewModelProvider
 import com.example.assignment1.ui.navigation.NavigationDestination
+import com.example.assignment1.ui.visuals.MetallicContainer
+import com.example.assignment1.ui.visuals.ShinyBlackContainer
 import kotlinx.coroutines.launch
 
 object SettingsDestination : NavigationDestination{
@@ -52,11 +58,16 @@ fun SettingsScreen(
             )
         }
     ) { paddingValues ->
-        SettingsBody(
+        ShinyBlackContainer(
             modifier = modifier,
-            paddingValues = paddingValues,
-            viewModel = viewModel
-        )
+        ) {
+
+            SettingsBody(
+                modifier = modifier,
+                paddingValues = paddingValues,
+                viewModel = viewModel
+            )
+        }
     }
 }
 
@@ -78,7 +89,7 @@ fun SettingsBody(
             description = "Disables warnings about actions that lead to you losing built up coins earned for a focus of break session",
             onToggle = {
                 viewModel.viewModelScope.launch {
-                    viewModel.setDisableCoinWarnings(it)
+                    viewModel.setCoinWarningsEnabled(it)
                 }
             }
         )
@@ -94,26 +105,31 @@ fun SettingFrame(
     onToggle: (Boolean) -> Unit
 ) {
     var descriptionExpanded by remember { mutableStateOf(false) }
-    Column {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Checkbox(
-                checked = enabled,
-                onCheckedChange = onToggle
-            )
-            Text(name)
-            IconButton(
-                onClick = { descriptionExpanded = !descriptionExpanded }
+    MetallicContainer(height = 100f, rounding = 6.dp) {
+        Column (
+            modifier = Modifier.fillMaxWidth()
+        ){
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.info),
-                    contentDescription = "Info"
+                Checkbox(
+                    checked = enabled,
+                    onCheckedChange = onToggle
                 )
+                Text(name, fontSize = 26.sp)
+                IconButton(
+                    onClick = { descriptionExpanded = !descriptionExpanded }
+                ) {
+                    Icon(
+                        modifier = Modifier.size(26.dp),
+                        painter = painterResource(id = R.drawable.info),
+                        contentDescription = "Info"
+                    )
+                }
             }
-        }
-        if(descriptionExpanded) {
-            Text(description)
+            if(descriptionExpanded) {
+                Text(description)
+            }
         }
     }
 }

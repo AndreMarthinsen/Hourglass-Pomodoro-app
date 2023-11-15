@@ -19,6 +19,8 @@ import com.example.assignment1.ui.preset.PresetsDestination
 import com.example.assignment1.ui.preset.PresetsScreen
 import com.example.assignment1.ui.settings.SettingsDestination
 import com.example.assignment1.ui.settings.SettingsScreen
+import com.example.assignment1.ui.unlockables.UnlockableStoreDestination
+import com.example.assignment1.ui.unlockables.UnlockableStoreScreen
 
 /**
  * The application's mavhost, describing and facilitating navigation
@@ -77,6 +79,9 @@ fun PomodoroNavHost(
             SettingsScreen(
                 navigateBack = { navController.popBackStack() },
                 )
+        }
+        composable(route = UnlockableStoreDestination.route) {
+            UnlockableStoreScreen()
         }
     }
 }

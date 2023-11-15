@@ -1,4 +1,4 @@
-package com.example.assignment1.data
+package com.example.assignment1.data.preset
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

@@ -2,9 +2,8 @@ package com.example.assignment1.ui.preset
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.assignment1.data.Preset
-import com.example.assignment1.data.PresetRepository
-import com.example.assignment1.data.SettingsRepository
+import com.example.assignment1.data.preset.Preset
+import com.example.assignment1.data.preset.PresetRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map

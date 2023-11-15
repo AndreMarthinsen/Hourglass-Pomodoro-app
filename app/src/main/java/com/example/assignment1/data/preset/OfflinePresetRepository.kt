@@ -1,4 +1,4 @@
-package com.example.assignment1.data
+package com.example.assignment1.data.preset
 
 import kotlinx.coroutines.flow.Flow
 
@@ -8,7 +8,8 @@ import kotlinx.coroutines.flow.Flow
  *
  * @param presetDataAccessObject - DAO that describes database-interaction
  */
-class OfflinePresetRepository(private val presetDataAccessObject: PresetDataAccessObject) : PresetRepository {
+class OfflinePresetRepository(private val presetDataAccessObject: PresetDataAccessObject) :
+    PresetRepository {
     /**
      * Retrieve all presets from the given data source
      */

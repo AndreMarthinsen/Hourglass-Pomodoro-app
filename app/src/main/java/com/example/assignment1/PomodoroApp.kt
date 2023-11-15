@@ -1,5 +1,6 @@
 package com.example.assignment1
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
@@ -34,6 +35,7 @@ import com.example.assignment1.ui.AppViewModelProvider
 import com.example.assignment1.ui.navbar.NavbarViewModel
 import com.example.assignment1.ui.navigation.DropDownNavigation
 import com.example.assignment1.ui.navigation.PomodoroNavHost
+import com.example.assignment1.ui.unlockables.UnlockableStoreDestination
 import com.example.assignment1.ui.visuals.MetallicContainer
 
 @Composable
@@ -76,7 +78,9 @@ fun PomodoroTopAppBar(
                 }
             },
             actions = {
-                CurrencyDisplay(currency = unlockables.currency)
+                CurrencyDisplay(
+                    currency = unlockables.currency
+                ) { navController.navigate(UnlockableStoreDestination.route) }
                 IconButton(onClick = {expanded = !expanded}) {
                     Icon(imageVector = Icons.Filled.Menu,contentDescription = null)
                 }
@@ -90,11 +94,15 @@ fun PomodoroTopAppBar(
 }
 
 @Composable
-fun CurrencyDisplay(currency: Int) {
+fun CurrencyDisplay(
+    currency: Int,
+    navigateToStore: () -> Unit
+) {
     MetallicContainer(height = 5f, rounding = 6.dp) {
         Row(
             modifier = Modifier
                 .width(60.dp)
+                .clickable { navigateToStore() },
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.coin_svgrepo_com),

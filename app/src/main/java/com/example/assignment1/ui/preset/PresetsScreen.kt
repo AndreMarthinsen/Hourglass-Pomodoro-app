@@ -42,11 +42,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.assignment1.PomodoroTopAppBar
-import com.example.assignment1.data.Preset
+import com.example.assignment1.data.preset.Preset
 import com.example.assignment1.ui.AppViewModelProvider
 import com.example.assignment1.ui.navigation.NavigationDestination
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
 object PresetsDestination : NavigationDestination {

@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -15,7 +16,7 @@ import java.io.IOException
 
 data class Settings(
     val currency: Int,
-    val showCoinWarning: Boolean
+    val showCoinWarning: Boolean,
 )
 
 const val Settings_NAME = "pomodoro_preferences"
@@ -33,6 +34,7 @@ class SettingsRepository(
     private object SettingsKeys {
         val CURRENCY = intPreferencesKey("currency")
         val SHOW_COIN_WARNING = booleanPreferencesKey("showCoinWarning")
+        val UNLOCKABLES = stringPreferencesKey("unlockables")
     }
 
     val settings: Flow<Settings> = context.dataStore.data

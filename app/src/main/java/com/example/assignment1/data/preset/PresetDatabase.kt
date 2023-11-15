@@ -1,4 +1,4 @@
-package com.example.assignment1.data
+package com.example.assignment1.data.preset
 
 import android.content.Context
 import androidx.room.Room

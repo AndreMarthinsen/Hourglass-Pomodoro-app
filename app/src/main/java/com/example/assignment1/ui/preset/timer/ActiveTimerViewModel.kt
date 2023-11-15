@@ -7,8 +7,8 @@ import android.util.Log
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
-import com.example.assignment1.data.Preset
-import com.example.assignment1.data.PresetRepository
+import com.example.assignment1.data.preset.Preset
+import com.example.assignment1.data.preset.PresetRepository
 import com.example.assignment1.services.TimerService
 import com.example.assignment1.services.pad
 import kotlinx.coroutines.flow.first

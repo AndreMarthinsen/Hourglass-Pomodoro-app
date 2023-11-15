@@ -86,7 +86,9 @@ fun PomodoroNavHost(
                 )
         }
         composable(route = UnlockableStoreDestination.route) {
-            UnlockableStoreScreen()
+            UnlockableStoreScreen(
+                navigateBack = { navController.popBackStack() },
+                navController = navController)
         }
     }
 }

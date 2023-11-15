@@ -36,22 +36,22 @@ abstract class UnlockableDatabase : RoomDatabase() {
             return object : Callback() {
                 override fun onCreate(db: SupportSQLiteDatabase) {
                     super.onCreate(db)
-                    var dao = getDatabase(context)!!.unlockableDao()
-                        GlobalScope.launch {
-                            dao.insert(Unlockable(
-                                name = "Prize 1",
-                                cost = 500,
-                                purchased = false))
-                            dao.insert(Unlockable(
-                                name = "Prize 2",
-                                cost = 750,
-                                purchased = false))
-                            dao.insert(Unlockable(
-                                name = "Prize 3",
-                                cost = 1000,
-                                purchased = false
-                            ))
-                        }
+                    var dao = getDatabase(context).unlockableDao()
+                    GlobalScope.launch {
+                        dao.insert(Unlockable(
+                            name = "Prize 1",
+                            cost = 50,
+                            purchased = false))
+                        dao.insert(Unlockable(
+                            name = "Prize 2",
+                            cost = 75,
+                            purchased = false))
+                        dao.insert(Unlockable(
+                            name = "Prize 3",
+                            cost = 100,
+                            purchased = false
+                        ))
+                    }
                 }
             }
         }

@@ -22,18 +22,18 @@ object AppViewModelProvider {
         initializer {
             PresetsViewModel(
                 pomodoroApplication().container.presetRepository,
-                pomodoroApplication().container.unlockablesRepository
             )
         }
         initializer {
             ActiveTimerViewModel(
                 pomodoroApplication().container.presetRepository,
+                pomodoroApplication().container.settingsRepository,
                 pomodoroApplication()
             )
         }
         initializer {
             NavbarViewModel(
-                pomodoroApplication().container.unlockablesRepository
+                pomodoroApplication().container.settingsRepository
             )
         }
     }

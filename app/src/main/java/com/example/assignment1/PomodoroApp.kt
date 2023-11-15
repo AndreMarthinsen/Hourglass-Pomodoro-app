@@ -1,16 +1,9 @@
 package com.example.assignment1
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
@@ -18,9 +11,7 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.Shapes
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -30,22 +21,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.example.assignment1.data.Unlockables
+import com.example.assignment1.data.Settings
 import com.example.assignment1.services.TimerService
 import com.example.assignment1.ui.AppViewModelProvider
 import com.example.assignment1.ui.navbar.NavbarViewModel
 import com.example.assignment1.ui.navigation.DropDownNavigation
 import com.example.assignment1.ui.navigation.PomodoroNavHost
-import com.example.assignment1.ui.visuals.LitContainer
 import com.example.assignment1.ui.visuals.MetallicContainer
 
 @Composable
@@ -70,7 +58,7 @@ fun PomodoroTopAppBar(
     navController: NavController,
     viewModel: NavbarViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
-    val unlockables : Unlockables by viewModel.unlockablesUiState.collectAsState()
+    val unlockables : Settings by viewModel.settingsUiState.collectAsState()
     var expanded by remember { mutableStateOf(false) }
     Column() {
         CenterAlignedTopAppBar(

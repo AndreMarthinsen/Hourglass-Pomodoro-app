@@ -2,9 +2,7 @@ package com.example.assignment1.ui.preset.timer
 
 import android.annotation.SuppressLint
 import android.app.Application
-import android.content.Intent
 import android.media.MediaPlayer
-import android.os.SystemClock
 import android.util.Log
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -17,15 +15,16 @@ import kotlinx.coroutines.flow.first
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import androidx.lifecycle.viewModelScope
-import com.example.assignment1.recievers.ActivityTransitionReceiver
 import com.example.assignment1.PomodoroApplication
 import com.example.assignment1.R
+import com.example.assignment1.data.Settings
+import com.example.assignment1.data.SettingsRepository
 import com.example.assignment1.data.dataStore
-import com.google.android.gms.common.internal.safeparcel.SafeParcelableSerializer
-import com.google.android.gms.location.ActivityTransition
-import com.google.android.gms.location.ActivityTransitionEvent
-import com.google.android.gms.location.ActivityTransitionResult
 import com.google.android.gms.location.DetectedActivity
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlin.time.DurationUnit
 
@@ -54,7 +53,9 @@ val BonusActivities = listOf(
 
 
 class ActiveTimerViewModel(
-    private val presetRepository: PresetRepository, application: Application
+    private val presetRepository: PresetRepository,
+    private val settingsRepository: SettingsRepository,
+    application: Application,
 ) : AndroidViewModel(application) {
     private val defaultPreset = Preset(
         id = -10000,
@@ -65,6 +66,18 @@ class ActiveTimerViewModel(
         breakLength = 5,
         longBreakLength = 25
     )
+
+    /**
+    * Fetches a stateFlow of settings from the settingsRepository
+    * @see updateShowCoinWarning for setting a new value for showing warning
+    * */
+    val settingsUiState: StateFlow<Settings> =
+        settingsRepository.getFromSettingsStore().map {it}
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000L),
+                initialValue = Settings(0, true)
+            )
 
     val points = mutableIntStateOf(0)
 
@@ -121,6 +134,13 @@ class ActiveTimerViewModel(
         isSetup = true
     }
 
+
+    //Sets the new state of showCoinWarning
+    fun updateShowCoinWarning(newState: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.updateCoinWarning(newState)
+        }
+    }
 
     fun start () {
         if(!isSetup) {

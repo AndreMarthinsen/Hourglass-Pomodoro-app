@@ -7,7 +7,7 @@ import android.content.Context
  */
 interface AppContainer {
     val presetRepository : PresetRepository
-    val unlockablesRepository : UnlockablesRepository
+    val settingsRepository : SettingsRepository
 }
 
 /**
@@ -19,5 +19,5 @@ class AppDataContainer(private val context: Context) : AppContainer {
         OfflinePresetRepository(PresetDatabase.getDatabase(context).presetDao())
     }
 
-    override val unlockablesRepository = UnlockablesRepository(context)
+    override val settingsRepository = SettingsRepository(context)
 }

@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxColors
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -74,13 +76,17 @@ fun DebugOverlay(
         }
     }
 }
+
+
 @Composable
 fun ConfirmationOverlay(
     enabled: Boolean,
     onConfirmAction: () -> Unit,
     onReject: () -> Unit,
+    onDisable: () -> Unit,
     message: @Composable () -> Unit
 ) {
+    var isDisabled by remember { mutableStateOf(false) }
     if(enabled) {
         Box(
             modifier = Modifier
@@ -109,8 +115,21 @@ fun ConfirmationOverlay(
                         Text("Yes")
                     }
                 }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    var checked by remember { mutableStateOf(false) }
+                    Checkbox(
+                        checked = checked,
+                        onCheckedChange = { isChecked ->
+                            isDisabled = !isDisabled
+                            checked = isChecked
+                        },
+                    )
+                    Text("Don't show again")
+                }
+
             }
         }
     }
-
 }

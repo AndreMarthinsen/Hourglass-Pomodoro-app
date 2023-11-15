@@ -116,7 +116,7 @@ fun ActiveTimerBody(
     val lightScope = rememberCoroutineScope()
     val scrollState = rememberScrollState(0)
     val currentLightColor = remember { Animatable(Color.DarkGray) }
-    val isPrompting = remember { mutableStateOf(false) }
+    val shouldPrompt = remember { mutableStateOf(false) }
     val currency = remember { mutableIntStateOf(0) }
     val promptFunction: MutableState<() -> Unit> = remember { mutableStateOf({}) }
     val activeBreakLightColor = Color(130, 85, 255, 255)
@@ -297,21 +297,24 @@ fun ActiveTimerBody(
                             timerViewModel.skip()
                             timerViewModel.sync()
                         }
-                        isPrompting.value = true
+                        shouldPrompt.value = true
                     }
                 )
             }
             Spacer(Modifier.height(30.dp))
         }
 
-        ConfirmationOverlay(enabled = isPrompting.value ,
+        ConfirmationOverlay(enabled = shouldPrompt.value ,
             onConfirmAction = {
                 promptFunction.value()
-                isPrompting.value = false
+                shouldPrompt.value = false
             },
             onReject = {
-                isPrompting.value = false
+                shouldPrompt.value = false
             },
+            onDisable = {
+
+            }
         ) {
             Text("Do you really want to skip this timer?")
             Text("Skipping will cause your progress to be lost.")

@@ -20,6 +20,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.assignment1.recievers.ActivityTransitionReceiver
 import com.example.assignment1.PomodoroApplication
 import com.example.assignment1.R
+import com.example.assignment1.data.dataStore
 import com.google.android.gms.common.internal.safeparcel.SafeParcelableSerializer
 import com.google.android.gms.location.ActivityTransition
 import com.google.android.gms.location.ActivityTransitionEvent
@@ -212,6 +213,7 @@ class ActiveTimerViewModel(
     }
 
     fun skip() {
+        this.getApplication<PomodoroApplication>().dataStore.data
         if(!finishedPreset.value) {
             hasSkipped = true
             pause()

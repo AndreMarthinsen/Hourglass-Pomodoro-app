@@ -68,7 +68,7 @@ object ActivePresetDestination : NavigationDestination {
     override val route = "preset_active"
     override val titleRes = 1
     const val presetIdArg = "presetId"
-    val routeWithArgs = "$route/{$presetIdArg}"
+    val routeWithArgs = "$route?$presetIdArg={$presetIdArg}"
 }
 
 
@@ -103,7 +103,11 @@ fun ActiveTimerScreen(
         },
     ) {
         innerPadding ->
-        viewModel.loadPreset(presetID)
+        if(presetID != -1 && viewModel.currentState.value == TimerService.State.Idle) {
+            viewModel.loadPreset(presetID)
+        } else {
+            viewModel.refresh()
+        }
         ActiveTimerBody(
             timerViewModel = viewModel,
             modifier = modifier

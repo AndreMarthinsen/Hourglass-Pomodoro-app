@@ -47,7 +47,10 @@ fun PomodoroNavHost(
          */
         composable(
             route = ActivePresetDestination.routeWithArgs,
-            arguments = listOf(navArgument("presetId") { type = NavType.IntType})
+            arguments = listOf(navArgument("presetId") {
+                defaultValue = -1
+                type = NavType.IntType
+            })
         ) { backStackEntry ->
             val parentViewModel: ActiveTimerViewModel = viewModel(factory= AppViewModelProvider.Factory)
             parentViewModel.timerService = timerService

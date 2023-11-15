@@ -78,6 +78,8 @@ fun PomodoroNavHost(
         composable(route = SettingsDestination.route) {
             SettingsScreen(
                 navigateBack = { navController.popBackStack() },
+                navController = navController,
+                viewModel = viewModel(factory = AppViewModelProvider.Factory)
                 )
         }
         composable(route = UnlockableStoreDestination.route) {

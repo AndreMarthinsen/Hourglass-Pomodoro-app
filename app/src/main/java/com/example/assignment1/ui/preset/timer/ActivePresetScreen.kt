@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -32,7 +33,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -43,14 +43,19 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.example.assignment1.PomodoroTopAppBar
+import com.example.assignment1.R
+import com.example.assignment1.data.Settings
 import com.example.assignment1.services.TimerService
 import com.example.assignment1.ui.navigation.NavigationDestination
 import com.example.assignment1.ui.visuals.LitContainer
+import com.example.assignment1.ui.visuals.MetallicContainer
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.minutes
 
@@ -114,12 +119,13 @@ fun ActiveTimerBody(
     timerViewModel: ActiveTimerViewModel,
     modifier: Modifier = Modifier
 ) {
+    val settings : Settings by timerViewModel.settingsUiState.collectAsState()
     val scrollScope = rememberCoroutineScope()
     val lightScope = rememberCoroutineScope()
     val scrollState = rememberScrollState(0)
     val currentLightColor = remember { Animatable(Color.DarkGray) }
     val shouldPrompt = remember { mutableStateOf(false) }
-    val currency = remember { mutableIntStateOf(0) }
+
     val promptFunction: MutableState<() -> Unit> = remember { mutableStateOf({}) }
     val activeBreakLightColor = Color(130, 85, 255, 255)
     val activeFocusLightColor = Color(255, 224, 70, 255)
@@ -157,7 +163,6 @@ fun ActiveTimerBody(
 
     timerViewModel.onTimerFinished = {
         lightScope.launch {
-
             currentLightColor.animateTo(if (isOnBreak) {
                 activeBreakLightColor
             } else {
@@ -209,10 +214,6 @@ fun ActiveTimerBody(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(Modifier.height(50.dp))
-//            Column(Modifier.background(color = Color.White, shape = RoundedCornerShape(16.dp))) {
-//                Text(timerViewModel.currentState.value.toString(), fontSize = 32.sp, fontWeight = FontWeight.Bold)
-//                Text("Activity: " + BonusMultiplierManager.latestActivity.toString(), fontSize = 32.sp, fontWeight = FontWeight.Bold)
-//            }
             Column(
                 modifier = Modifier
                     .background(
@@ -249,11 +250,19 @@ fun ActiveTimerBody(
                     lightColor = currentLightColor.value,
                     hours = hours, minutes = minutes , seconds = seconds)
                 TimerAdjustmentBar (
-
                     scrollState = scrollState,
                     lightColor = currentLightColor.value
                 )
             }
+
+            CoinDisplay(
+                lightColor = if(timerViewModel.points.intValue != 0) {
+                    currentLightColor.value
+                } else {
+                    Color.DarkGray
+                },
+                coins = timerViewModel.points.intValue
+            )
 
             // BUTTON ROW
             Row(
@@ -295,18 +304,24 @@ fun ActiveTimerBody(
                 )
                 SkipButton(
                     onClick = {
-                        promptFunction.value = {
+                        if( settings.showCoinWarning ) {
+                            promptFunction.value = {
+                                timerViewModel.skip()
+                                timerViewModel.sync()
+                            }
+                            shouldPrompt.value = true
+                        } else {
                             timerViewModel.skip()
                             timerViewModel.sync()
                         }
-                        shouldPrompt.value = true
+
                     }
                 )
             }
             Spacer(Modifier.height(30.dp))
         }
 
-        ConfirmationOverlay(enabled = shouldPrompt.value ,
+        ConfirmationOverlay(enabled = shouldPrompt.value && settings.showCoinWarning,
             onConfirmAction = {
                 promptFunction.value()
                 shouldPrompt.value = false
@@ -314,17 +329,20 @@ fun ActiveTimerBody(
             onReject = {
                 shouldPrompt.value = false
             },
-            onDisable = {
-
+            onDisableWarning = {
+                timerViewModel.viewModelScope.launch {
+                    timerViewModel.settingsRepository.updateCoinWarning(false)
+                }
             }
         ) {
-            Text("Do you really want to skip this timer?")
-            Text("Skipping will cause your progress to be lost.")
+            Text("${timerViewModel.points.intValue} coins will be lost")
+            Text("Do you want to proceed?")
         }
         DebugOverlay(debugInfo = mapOf(
             "Timer state:" to timerViewModel.currentState.value,
-            "User activity: " to detectedActivityToString(BonusMultiplierManager.latestActivity),
-            "Multiplier: " to BonusMultiplierManager.getMultiplier(),
+            "User activity: " to detectedActivityToString(BonusManager.latestActivity),
+            "Multiplier: " to if(isOnBreak) {BonusManager.getBreakBonus()} else {BonusManager.getFocusBonus() },
+            "Reward" to timerViewModel.points.intValue,
         ))
     }
 }
@@ -353,6 +371,39 @@ fun ProgressDisplay(
             rounding = 6.dp
         ) {
             Text("$elapsedSessions / $maxSessions")
+        }
+    }
+}
+
+@Composable
+fun CoinDisplay(
+    lightColor: Color,
+    coins: Int
+) {
+    LitContainer(
+        lightColor = lightColor,
+        height = 200f,
+        rounding = 16.dp
+    ) {
+        Row (
+            modifier = Modifier.width(100.dp)
+                .padding(8.dp, 0.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.coin_svgrepo_com),
+                contentDescription = "Image of coin with dollar sign",
+                modifier = Modifier
+                    .size(20.dp)
+                    .align(Alignment.CenterVertically)
+            )
+            Text(
+                text = "$coins",
+                fontSize = 26.sp,
+                modifier = Modifier
+                    .align(Alignment.CenterVertically)
+            )
         }
     }
 }

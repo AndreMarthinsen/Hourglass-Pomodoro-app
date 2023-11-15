@@ -11,6 +11,7 @@ import com.example.assignment1.ui.preset.timer.ActiveTimerViewModel
 import com.example.assignment1.ui.preset.PresetEditViewModel
 import com.example.assignment1.ui.preset.PresetsViewModel
 import com.example.assignment1.ui.unlockables.UnlockableStoreViewModel
+import com.example.assignment1.ui.settings.SettingsViewModel
 
 object AppViewModelProvider {
     val Factory = viewModelFactory {
@@ -36,6 +37,12 @@ object AppViewModelProvider {
             NavbarViewModel(
                 pomodoroApplication().container.settingsRepository
             )
+        }
+        initializer {
+            SettingsViewModel(
+                pomodoroApplication().container.settingsRepository
+            )
+
         }
         initializer {
             UnlockableStoreViewModel(

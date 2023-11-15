@@ -28,33 +28,12 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlin.time.DurationUnit
 
-object BonusMultiplierManager {
-    private const val ACTIVE_MULTIPLIER = 2 // Multiplier for active activities
-    private const val DEFAULT_MULTIPLIER = 1 // Default multiplier
-    public var latestActivity: Int = 3
 
-    private var currentMultiplier: Int = DEFAULT_MULTIPLIER
-
-    fun setMultiplier(isActive: Boolean) {
-        currentMultiplier = if (isActive) ACTIVE_MULTIPLIER else DEFAULT_MULTIPLIER
-    }
-
-    fun getMultiplier(): Int {
-        return currentMultiplier
-    }
-}
-
-val BonusActivities = listOf(
-    DetectedActivity.WALKING,
-    DetectedActivity.RUNNING,
-    DetectedActivity.ON_BICYCLE,
-    DetectedActivity.ON_FOOT
-)
 
 
 class ActiveTimerViewModel(
     private val presetRepository: PresetRepository,
-    private val settingsRepository: SettingsRepository,
+    val settingsRepository: SettingsRepository,
     application: Application,
 ) : AndroidViewModel(application) {
     private val defaultPreset = Preset(
@@ -86,7 +65,6 @@ class ActiveTimerViewModel(
     @SuppressLint("StaticFieldLeak")
     lateinit var timerService : TimerService
 
-    var userState = mutableStateOf("")
     var seconds = mutableStateOf("00")
         private set
     var minutes = mutableStateOf("00")
@@ -101,14 +79,14 @@ class ActiveTimerViewModel(
     var loadedPreset = defaultPreset
         private set
 
-    var presetName = mutableStateOf( loadedPreset.name )
-        private set
+
     var elapsedRounds =  mutableIntStateOf(0 )
         private set
     var elapsedSessions = mutableIntStateOf( 0 )
         private set
     var finishedPreset = mutableStateOf( false )
         private set
+
     private var hasSkipped = false
 
     // For exposing the current timer start length
@@ -149,10 +127,13 @@ class ActiveTimerViewModel(
         }
         timerService.start(
             onTickEvent = {
-//                sendFakeTransitionEvent()
                 onTickEvent()
                 if(currentTimerLength.value.toInt(DurationUnit.SECONDS) % 5 == 0) {
-                    points.value += 1 * BonusMultiplierManager.getMultiplier()
+                    points.intValue += if(isBreak.value) {
+                        BonusManager.getBreakBonus()
+                    } else {
+                        BonusManager.getFocusBonus()
+                    }
                 }
                 updateTimeUnits()
             },
@@ -160,6 +141,7 @@ class ActiveTimerViewModel(
                 //TODO Skip causes onTimerFinished to be called repeatedly
                 //TODO Tilting device causes interface to lose track of state
                 onTimerFinished()
+                depositPoints()
                 dingSound.start()
                 this.progressTimer()
                 pause()
@@ -169,6 +151,14 @@ class ActiveTimerViewModel(
                 }
             }
         )
+    }
+
+    private fun depositPoints() {
+        val pointsToDeposit = points.intValue
+        points.intValue = 0
+        viewModelScope.launch {
+            settingsRepository.addCurrency(pointsToDeposit)
+        }
     }
 
 
@@ -233,7 +223,7 @@ class ActiveTimerViewModel(
     }
 
     fun skip() {
-        this.getApplication<PomodoroApplication>().dataStore.data
+        points.intValue = 0
         if(!finishedPreset.value) {
             hasSkipped = true
             pause()
@@ -253,6 +243,7 @@ class ActiveTimerViewModel(
 
     fun reset() {
         pause()
+        points.intValue = 0
         elapsedRounds.intValue = 0
         elapsedSessions.intValue = 0
         finishedPreset.value = false

@@ -1,12 +1,11 @@
 package com.example.assignment1
 
-import android.app.Instrumentation
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import com.example.assignment1.ui.preset.BonusActivities
-import com.example.assignment1.ui.preset.BonusMultiplierManager
+import com.example.assignment1.ui.preset.timer.BonusActivities
+import com.example.assignment1.ui.preset.timer.BonusMultiplierManager
 import com.google.android.gms.location.ActivityTransition
 import com.google.android.gms.location.ActivityRecognitionResult
 import com.google.android.gms.location.ActivityTransitionResult

@@ -1,8 +1,6 @@
-package com.example.assignment1.ui.preset
+package com.example.assignment1.ui.preset.timer
 
 import android.annotation.SuppressLint
-import android.media.MediaPlayer
-import android.util.Log
 import androidx.compose.animation.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
@@ -28,12 +26,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -52,7 +53,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.assignment1.MainActivity
 import com.example.assignment1.PomodoroTopAppBar
 import com.example.assignment1.R
 import com.example.assignment1.services.TimerService
@@ -120,6 +120,10 @@ fun ActiveTimerScreen(
 
 
 
+
+
+
+
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun ActiveTimerBody(
@@ -130,6 +134,9 @@ fun ActiveTimerBody(
     val lightScope = rememberCoroutineScope()
     val scrollState = rememberScrollState(0)
     val currentLightColor = remember { Animatable(Color.DarkGray) }
+    val isPrompting = remember { mutableStateOf(false) }
+    val currency = remember { mutableIntStateOf(0) }
+    val promptFunction: MutableState<() -> Unit> = remember { mutableStateOf({}) }
     val activeBreakLightColor = Color(130, 85, 255, 255)
     val activeFocusLightColor = Color(255, 224, 70, 255)
     val hours by timerViewModel.hours
@@ -146,7 +153,8 @@ fun ActiveTimerBody(
                         timerViewModel.currentTimerLength.value,
                         90.minutes,
                         scrollState.maxValue, null
-                    ))
+                    )
+                )
             }
         }
     }
@@ -158,7 +166,8 @@ fun ActiveTimerBody(
                     timerViewModel.currentTimerLength.value,
                     90.minutes,
                     scrollState.maxValue, null
-                ))
+                )
+            )
         }
     }
 
@@ -176,8 +185,7 @@ fun ActiveTimerBody(
     timerViewModel.refresh()
 
     var scrollEventToHandle by remember { mutableStateOf(false) }
-    
-    //TODO: This prevents thread problems, but might want a better solution
+
     if(scrollState.isScrollInProgress) {
         if (!scrollEventToHandle) {
             timerViewModel.pause()
@@ -195,111 +203,141 @@ fun ActiveTimerBody(
                 timerViewModel.currentTimerLength.value,
                 90.minutes,
                 scrollState.maxValue, null
-            )) {
+            )
+        ) {
             timerViewModel.sync()
         }
     }
 
     timerViewModel.refresh()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                brush = Brush.linearGradient(
-                    colors = listOf(Color.Black, Color.DarkGray, Color.Black)
-                )
-            )
-            .padding(30.dp),
-        verticalArrangement = Arrangement.SpaceEvenly,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Spacer(Modifier.height(50.dp))
-        Column(Modifier.background(color = Color.White, shape = RoundedCornerShape(16.dp))) {
-            Text(timerViewModel.currentState.value.toString(), fontSize = 32.sp, fontWeight = FontWeight.Bold)
-            Text("Activity: " + BonusMultiplierManager.latestActivity.toString(), fontSize = 32.sp, fontWeight = FontWeight.Bold)
-        }
+    Box {
         Column(
             modifier = Modifier
+                .fillMaxSize()
                 .background(
-                    Brush.linearGradient(listOf(Color.Gray, Color.White, Color.Gray)),
-                    RoundedCornerShape(16.dp)
+                    brush = Brush.linearGradient(
+                        colors = listOf(Color.Black, Color.DarkGray, Color.Black)
+                    )
                 )
-                .fillMaxWidth()
-                .border(
-                    BorderStroke(
-                        2.dp,
-                        Brush.linearGradient(listOf(Color.DarkGray, Color.Gray, Color.LightGray))
-                    ),
-                    RoundedCornerShape(16.dp)
-                )
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                .padding(30.dp),
+            verticalArrangement = Arrangement.SpaceEvenly,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            ProgressDisplay(
-                lightColor = currentLightColor.value,
-                maxRounds = timerViewModel.loadedPreset.roundsInSession,
-                elapsedRounds = timerViewModel.elapsedRounds.intValue,
-                maxSessions = timerViewModel.loadedPreset.totalSessions,
-                elapsedSessions = timerViewModel.elapsedSessions.intValue
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            TimerDisplay(
-                lightColor = currentLightColor.value,
-                hours = hours, minutes = minutes , seconds = seconds)
-            TimerAdjustmentBar (
-                scrollState = scrollState,
-                lightColor = currentLightColor.value
-            )
+            Spacer(Modifier.height(50.dp))
+//            Column(Modifier.background(color = Color.White, shape = RoundedCornerShape(16.dp))) {
+//                Text(timerViewModel.currentState.value.toString(), fontSize = 32.sp, fontWeight = FontWeight.Bold)
+//                Text("Activity: " + BonusMultiplierManager.latestActivity.toString(), fontSize = 32.sp, fontWeight = FontWeight.Bold)
+//            }
+            Column(
+                modifier = Modifier
+                    .background(
+                        Brush.linearGradient(listOf(Color.Gray, Color.White, Color.Gray)),
+                        RoundedCornerShape(16.dp)
+                    )
+                    .fillMaxWidth()
+                    .border(
+                        BorderStroke(
+                            2.dp,
+                            Brush.linearGradient(
+                                listOf(
+                                    Color.DarkGray,
+                                    Color.Gray,
+                                    Color.LightGray
+                                )
+                            )
+                        ),
+                        RoundedCornerShape(16.dp)
+                    )
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                ProgressDisplay(
+                    lightColor = currentLightColor.value,
+                    maxRounds = timerViewModel.loadedPreset.roundsInSession,
+                    elapsedRounds = timerViewModel.elapsedRounds.intValue,
+                    maxSessions = timerViewModel.loadedPreset.totalSessions,
+                    elapsedSessions = timerViewModel.elapsedSessions.intValue
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                TimerDisplay(
+                    lightColor = currentLightColor.value,
+                    hours = hours, minutes = minutes , seconds = seconds)
+                TimerAdjustmentBar (
+
+                    scrollState = scrollState,
+                    lightColor = currentLightColor.value
+                )
+            }
+
+            // BUTTON ROW
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            )  {
+                ResetButton(
+                    enabled = timerState != TimerService.State.Idle && timerState != TimerService.State.Reset,
+                    onReset = {
+                        timerViewModel.reset()
+                        timerViewModel.sync()
+                        lightScope.launch {
+                            currentLightColor.animateTo(Color.DarkGray, animationSpec = tween(1000))
+                        }
+                    },
+                    size = 80.dp
+                )
+                PlayPauseButton(
+                    timerIsRunning = timerState == TimerService.State.Running,
+                    onPlay = {
+                        timerViewModel.start()
+                        lightScope.launch {
+                            currentLightColor.animateTo(
+                                if (isOnBreak) {
+                                    activeBreakLightColor
+                                } else {
+                                    activeFocusLightColor
+                                },
+                                animationSpec = tween(1000)
+                            )
+                        }},
+                    onPause = {
+                        timerViewModel.pause()
+                        lightScope.launch {
+                            currentLightColor.animateTo(Color.DarkGray, animationSpec = tween(1000))
+                        }},
+                    size = 120.dp
+                )
+                SkipButton(
+                    onClick = {
+                        promptFunction.value = {
+                            timerViewModel.skip()
+                            timerViewModel.sync()
+                        }
+                        isPrompting.value = true
+                    }
+                )
+            }
+            Spacer(Modifier.height(30.dp))
         }
 
-        // BUTTON ROW
-        Row(
-            Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        )  {
-            ResetButton(
-                enabled = timerState != TimerService.State.Idle && timerState != TimerService.State.Reset,
-                onReset = {
-                    timerViewModel.reset()
-                    timerViewModel.sync()
-                    lightScope.launch {
-                        currentLightColor.animateTo(Color.DarkGray, animationSpec = tween(1000))
-                    }
-                },
-                size = 80.dp
-            )
-            PlayPauseButton(
-                timerIsRunning = timerState == TimerService.State.Running,
-                onPlay = {
-                    timerViewModel.start()
-                    lightScope.launch {
-                        currentLightColor.animateTo(
-                            if (isOnBreak) {
-                                activeBreakLightColor
-                            } else {
-                                activeFocusLightColor
-                            },
-                            animationSpec = tween(1000)
-                        )
-                    }},
-                onPause = {
-                    timerViewModel.pause()
-                    lightScope.launch {
-                        currentLightColor.animateTo(Color.DarkGray, animationSpec = tween(1000))
-                    }},
-                size = 120.dp
-            )
-            SkipButton(
-                onClick = {
-                    timerViewModel.skip()
-                    timerViewModel.sync()
-                }
-            )
+        ConfirmationOverlay(enabled = isPrompting.value ,
+            onConfirmAction = {
+                promptFunction.value()
+                isPrompting.value = false
+            },
+            onReject = {
+                isPrompting.value = false
+            },
+        ) {
+            Text("Do you really want to skip this timer?")
+            Text("Skipping will cause your progress to be lost.")
         }
-        Spacer(Modifier.height(30.dp))
+        DebugOverlay(debugInfo = mapOf(
+            "Timer state:" to timerViewModel.currentState.value,
+            "User activity: " to detectedActivityToString(BonusMultiplierManager.latestActivity),
+        ))
     }
 }
 
@@ -330,7 +368,6 @@ fun ProgressDisplay(
         }
     }
 }
-
 
 
 /**
@@ -367,75 +404,6 @@ fun TimerDisplay (
 }
 
 
-/**
- * Button for either starting the timer or pausing it
- */
-@Composable
-fun PlayPauseButton (
-    timerIsRunning: Boolean,
-    onPause: () -> Unit,
-    onPlay: () -> Unit,
-    size: Dp
-) {
-    RoundMetalButton(
-        size = size,
-        onClick = {
-            if (timerIsRunning) { onPause() } else { onPlay() }
-        }
-    ) {
-        val icon = if (timerIsRunning) {
-            painterResource(id = R.drawable.pause_icon)
-        } else {
-            painterResource(id = R.drawable.play_icon)
-        }
-        Icon(
-            painter = icon,
-            contentDescription = "Play/Pause",
-            modifier = Modifier
-                .requiredSize(size / 2)
-                .blur(2.dp),
-            tint = Color.Black
-        )
-        Icon(
-            painter = icon,
-            contentDescription = "Play/Pause",
-            modifier = Modifier
-                .requiredSize(size/2),
-            tint = Color.LightGray
-        )
-    }
-}
-
-@Composable
-fun SkipButton(
-    onClick : () -> Unit
-) {
-    RoundMetalButton(size = 80.dp, onClick = { onClick() }) {
-        Text("skip", fontWeight = FontWeight.Bold)
-    }
-}
-
-/**
- * Resets the current timer to it's start position.
- * TODO: What reset feature do we actually want here?
- */
-@Composable
-fun ResetButton(
-    enabled: Boolean,
-    onReset: () -> Unit,
-    size: Dp
-) {
-    RoundMetalButton(
-        onClick = {
-            onReset()
-        },
-        size = size
-    ) {
-        Icon(
-            Icons.Filled.Refresh, "Reset button", Modifier.requiredSize(size/2)
-        )
-    }
-}
 
 
 /**
@@ -534,36 +502,3 @@ fun MinuteMarkers (
     }
 }
 
-
-/**
- * getScrollFromDuration calculates a scrollState value based on elapsed duration
- * divided by max duration in range [0, maxScroll]
- *
- * @param time - elapsed duration
- * @param maxTime - max duration
- * @param maxScroll - max value possible for a particular scrollable composable
- * @param roundingInSeconds - Rounds time to nearest n seconds.
- * @return Int in range [0, maxScroll]
- */
-fun getScrollFromDuration(time: Duration, maxTime: Duration, maxScroll: Int, roundingInSeconds: Int?) : Int {
-    return if(roundingInSeconds != null) {
-        ((time.toInt(DurationUnit.SECONDS).toFloat() /
-                maxTime.toInt(DurationUnit.SECONDS).toFloat()*maxScroll) / roundingInSeconds).toInt()*roundingInSeconds
-    } else {
-        ((time.toInt(DurationUnit.SECONDS).toFloat() /
-                maxTime.toInt(DurationUnit.SECONDS).toFloat()*maxScroll)).toInt()
-    }
-}
-
-
-/**
- * getDurationFromScroll calculates a duration from a scrollState where the returned duration
- * is maxDuration * (current scroll / max scroll).
- * @param scrollState - scrollState of scrollable used to calculate duration
- * @param maxDuration - max duration
- * @param roundingInSeconds - rounds resulting time to nearest n seconds
- * @return Duration in  range [0, maxDuration]
- */
-fun getDurationFromScroll(scrollState: ScrollState, maxDuration: Duration, roundingInSeconds: Int) : Duration {
-    return ((((scrollState.value.toFloat() / scrollState.maxValue.toFloat()) * maxDuration.toInt(DurationUnit.SECONDS))/roundingInSeconds).roundToInt()*roundingInSeconds).seconds
-}

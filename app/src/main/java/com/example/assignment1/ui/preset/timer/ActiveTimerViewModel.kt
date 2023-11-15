@@ -1,25 +1,14 @@
-package com.example.assignment1.ui.preset
+package com.example.assignment1.ui.preset.timer
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Application
-import android.app.PendingIntent
-import android.app.PendingIntent.getActivity
-import android.app.TaskStackBuilder
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.media.MediaPlayer
 import android.os.SystemClock
 import android.util.Log
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.core.app.ActivityCompat
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.assignment1.data.Preset
 import com.example.assignment1.data.PresetRepository
 import com.example.assignment1.services.TimerService
@@ -32,10 +21,8 @@ import com.example.assignment1.ActivityTransitionReceiver
 import com.example.assignment1.PomodoroApplication
 import com.example.assignment1.R
 import com.google.android.gms.common.internal.safeparcel.SafeParcelableSerializer
-import com.google.android.gms.location.ActivityRecognition
 import com.google.android.gms.location.ActivityTransition
 import com.google.android.gms.location.ActivityTransitionEvent
-import com.google.android.gms.location.ActivityTransitionRequest
 import com.google.android.gms.location.ActivityTransitionResult
 import com.google.android.gms.location.DetectedActivity
 import kotlinx.coroutines.launch
@@ -44,7 +31,7 @@ import kotlin.time.DurationUnit
 object BonusMultiplierManager {
     private const val ACTIVE_MULTIPLIER = 2 // Multiplier for active activities
     private const val DEFAULT_MULTIPLIER = 1 // Default multiplier
-    public var latestActivity: Int = -1
+    public var latestActivity: Int = 3
 
     private var currentMultiplier: Int = DEFAULT_MULTIPLIER
 

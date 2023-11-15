@@ -1,4 +1,4 @@
-package com.example.assignment1
+package com.example.assignment1.recievers
 
 import android.content.BroadcastReceiver
 import android.content.Context

@@ -3,11 +3,9 @@ package com.example.assignment1
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.PendingIntent
-import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.os.Build
@@ -21,7 +19,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.ActivityCompat
 import com.example.assignment1.ui.theme.ProjectTheme
@@ -34,6 +31,7 @@ import com.google.android.gms.location.ActivityTransition
 import com.google.android.gms.location.ActivityTransitionRequest
 import com.google.android.gms.location.DetectedActivity
 import androidx.compose.runtime.*
+import com.example.assignment1.recievers.ActivityTransitionReceiver
 
 
 @ExperimentalAnimationApi

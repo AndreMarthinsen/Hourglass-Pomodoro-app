@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.first
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import androidx.lifecycle.viewModelScope
-import com.example.assignment1.ActivityTransitionReceiver
+import com.example.assignment1.recievers.ActivityTransitionReceiver
 import com.example.assignment1.PomodoroApplication
 import com.example.assignment1.R
 import com.google.android.gms.common.internal.safeparcel.SafeParcelableSerializer

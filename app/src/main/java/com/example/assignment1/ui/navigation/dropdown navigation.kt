@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
 import com.example.assignment1.ui.preset.timer.ActivePresetDestination
 import com.example.assignment1.ui.preset.PresetsDestination
+import com.example.assignment1.ui.settings.SettingsDestination
 
 
 @Composable
@@ -36,6 +37,15 @@ fun DropDownNavigation (
                 }
             ) {
                 Text("Timer")
+            }
+        }
+        if(currentRoute != SettingsDestination.route) {
+            Button(
+                onClick = {
+                    navController.navigate( SettingsDestination.route )
+                }
+            ) {
+                Text("Settings")
             }
         }
 

@@ -163,7 +163,6 @@ fun ActiveTimerBody(
 
     timerViewModel.onTimerFinished = {
         lightScope.launch {
-
             currentLightColor.animateTo(if (isOnBreak) {
                 activeBreakLightColor
             } else {
@@ -251,7 +250,6 @@ fun ActiveTimerBody(
                     lightColor = currentLightColor.value,
                     hours = hours, minutes = minutes , seconds = seconds)
                 TimerAdjustmentBar (
-
                     scrollState = scrollState,
                     lightColor = currentLightColor.value
                 )
@@ -259,7 +257,7 @@ fun ActiveTimerBody(
 
             CoinDisplay(
                 lightColor = if(timerViewModel.points.intValue != 0) {
-                    activeFocusLightColor
+                    currentLightColor.value
                 } else {
                     Color.DarkGray
                 },

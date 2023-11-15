@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxColors
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -39,9 +38,6 @@ fun DebugOverlay(
         contentAlignment = Alignment.BottomCenter
     ) {
         Column(
-            modifier = Modifier
-                .background(Color.White.copy(alpha=0.5f), RoundedCornerShape(16.dp))
-                .padding(8.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -51,27 +47,35 @@ fun DebugOverlay(
                 Text(if(!expanded){"debug"} else {"close"})
             }
             if(expanded) {
-                debugInfo.forEach {
-                    Text("${it.key}: ${it.value}", fontSize = 12.sp)
-                }
                 Column(
-                    modifier = Modifier.border(2.dp, Color.Black),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.White.copy(alpha=0.5f), RoundedCornerShape(16.dp))
+                        .border(2.dp, Color.Black)
+                        .padding(16.dp),
                 ) {
-                    Text("Send activity:", fontSize = 12.sp)
-                    Row {
-                        listOf(
-                            DetectedActivity.STILL,
-                            DetectedActivity.WALKING,
-                            DetectedActivity.IN_VEHICLE
-                        ).forEach {
-                            Button(
-                                onClick = { sendFakeTransitionEvent(context, it) }
-                            ) {
-                                Text(detectedActivityToString(it), fontSize = 8.sp)
+                    debugInfo.forEach {
+                        Text("${it.key}: ${it.value}", fontSize = 12.sp)
+                    }
+                    Column {
+                        Text("Send activity:", fontSize = 12.sp)
+                        Row {
+                            listOf(
+                                DetectedActivity.STILL,
+                                DetectedActivity.WALKING,
+                                DetectedActivity.IN_VEHICLE,
+                                DetectedActivity.RUNNING
+                            ).forEach {
+                                Button(
+                                    onClick = { sendFakeTransitionEvent(context, it) }
+                                ) {
+                                    Text(detectedActivityToString(it), fontSize = 12.sp)
+                                }
                             }
                         }
                     }
                 }
+
             }
         }
     }
@@ -83,10 +87,11 @@ fun ConfirmationOverlay(
     enabled: Boolean,
     onConfirmAction: () -> Unit,
     onReject: () -> Unit,
-    onDisable: () -> Unit,
+    onDisableWarning: () -> Unit,
     message: @Composable () -> Unit
 ) {
     var isDisabled by remember { mutableStateOf(false) }
+    var disableWarningsChecked by remember { mutableStateOf(false) }
     if(enabled) {
         Box(
             modifier = Modifier
@@ -108,22 +113,32 @@ fun ConfirmationOverlay(
                         .padding(16.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    Button(onClick = { onReject() }) {
+                    Button(onClick = {
+                        onReject()
+                        if(disableWarningsChecked) {
+                            onDisableWarning()
+                        }
+                    }) {
                         Text("No")
                     }
-                    Button(onClick = { onConfirmAction() }) {
+                    Button(onClick = {
+                        onConfirmAction()
+                        if(disableWarningsChecked) {
+                            onDisableWarning()
+                        }
+                    }) {
                         Text("Yes")
                     }
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    var checked by remember { mutableStateOf(false) }
+
                     Checkbox(
-                        checked = checked,
+                        checked = disableWarningsChecked,
                         onCheckedChange = { isChecked ->
                             isDisabled = !isDisabled
-                            checked = isChecked
+                            disableWarningsChecked = isChecked
                         },
                     )
                     Text("Don't show again")

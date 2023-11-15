@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import java.io.IOException
@@ -52,6 +53,13 @@ class SettingsRepository(
         }
     }
 
+    suspend fun addCurrency(currency: Int) {
+        context.dataStore.edit() { preferences ->
+            val currentCurrency = preferences[SettingsKeys.CURRENCY] ?: 0
+            preferences[SettingsKeys.CURRENCY] = currentCurrency + currency
+        }
+    }
+
     suspend fun updateCoinWarning(newState: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[SettingsKeys.SHOW_COIN_WARNING] = newState
@@ -62,6 +70,7 @@ class SettingsRepository(
     fun getFromSettingsStore() = context.dataStore.data.map {
         mapSettings(it.toPreferences())
     }
+
 
     private fun mapSettings(preferences: Preferences): com.example.assignment1.data.Settings {
         val currency: Int = preferences[SettingsKeys.CURRENCY] ?: 0

@@ -29,14 +29,6 @@ class PresetsViewModel(
                 initialValue = PresetsUiState()
             )
 
-    val unlockablesUiState: StateFlow<Unlockables> =
-        unlockablesRepository.getFromUnlockablesStore().map { it }
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
-                initialValue = Unlockables(0)
-            )
-
     companion object {
         private const val TIMEOUT_MILLIS = 5_000L
     }
@@ -49,10 +41,6 @@ class PresetsViewModel(
                 it
             )
         }
-    }
-
-    suspend fun incrementCurrency(amount: Int) {
-        unlockablesRepository.updateCurrency(unlockablesUiState.value.currency + amount)
     }
 }
 

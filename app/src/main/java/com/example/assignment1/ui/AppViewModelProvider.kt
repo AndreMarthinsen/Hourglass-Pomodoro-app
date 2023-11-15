@@ -6,6 +6,7 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.assignment1.PomodoroApplication
+import com.example.assignment1.ui.navbar.NavbarViewModel
 import com.example.assignment1.ui.preset.timer.ActiveTimerViewModel
 import com.example.assignment1.ui.preset.PresetEditViewModel
 import com.example.assignment1.ui.preset.PresetsViewModel
@@ -28,6 +29,11 @@ object AppViewModelProvider {
             ActiveTimerViewModel(
                 pomodoroApplication().container.presetRepository,
                 pomodoroApplication()
+            )
+        }
+        initializer {
+            NavbarViewModel(
+                pomodoroApplication().container.unlockablesRepository
             )
         }
     }

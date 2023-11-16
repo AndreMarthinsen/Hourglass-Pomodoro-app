@@ -38,16 +38,6 @@ import com.example.assignment1.ui.navigation.PomodoroNavHost
 import com.example.assignment1.ui.unlockables.UnlockableStoreDestination
 import com.example.assignment1.ui.visuals.MetallicContainer
 
-@Composable
-fun PomodoroApp(
-    navController: NavHostController = rememberNavController(),
-    timerService: TimerService
-) {
-    PomodoroNavHost (
-        navController = navController,
-        timerService = timerService
-    )
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -121,6 +121,7 @@ class ActiveTimerViewModel(
     }
 
     fun start () {
+        Log.d("ActiveTimerViewModel", "start called")
         if(!isSetup) {
             setup()
             isSetup = true

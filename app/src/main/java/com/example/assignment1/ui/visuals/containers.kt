@@ -133,20 +133,23 @@ fun RoundMetalButton(
 @Composable
 fun ShinyBlackContainer(
     modifier : Modifier = Modifier,
-    content: @Composable () -> Unit
+    verticalArrangement: Arrangement.Vertical = Arrangement.SpaceBetween,
+    horizontalAlignment: Alignment.Horizontal = Alignment.CenterHorizontally,
+    content: @Composable () -> Unit,
+
 ) {
-    Box {
-        Column(
-            modifier = modifier
-                .fillMaxSize()
-                .background(
-                    brush = Brush.linearGradient(
-                        colors = listOf(Color.Black, Color.DarkGray, Color.Black)
-                    )
+    Column(
+        verticalArrangement = verticalArrangement,
+        horizontalAlignment = horizontalAlignment,
+        modifier = modifier
+            .background(
+                Brush.linearGradient(
+                    colors = listOf(Color.Black, Color.DarkGray, Color.Black)
                 )
-                .padding(30.dp)
-        ) {
-            content()
-        }
+            )
+            .fillMaxSize()
+            .padding(30.dp)
+    ){
+        content()
     }
 }

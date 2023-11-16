@@ -55,7 +55,7 @@ import com.example.assignment1.data.Settings
 import com.example.assignment1.services.TimerService
 import com.example.assignment1.ui.navigation.NavigationDestination
 import com.example.assignment1.ui.visuals.LitContainer
-import com.example.assignment1.ui.visuals.MetallicContainer
+import com.example.assignment1.ui.visuals.ShinyBlackContainer
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.minutes
 
@@ -91,7 +91,6 @@ fun ActiveTimerScreen(
     modifier: Modifier = Modifier,
     presetID: Int
 ) {
-    val settings by viewModel.settingsUiState.collectAsState()
     Scaffold(
         topBar = {
             PomodoroTopAppBar(
@@ -105,8 +104,6 @@ fun ActiveTimerScreen(
         innerPadding ->
         if(presetID != -1 && viewModel.currentState.value == TimerService.State.Idle) {
             viewModel.loadPreset(presetID)
-        } else {
-            viewModel.refresh()
         }
         ActiveTimerBody(
             timerViewModel = viewModel,
@@ -129,8 +126,8 @@ fun ActiveTimerBody(
     val scrollState = rememberScrollState(0)
     val currentLightColor = remember { Animatable(Color.DarkGray) }
     val shouldPrompt = remember { mutableStateOf(false) }
-
-    val promptFunction: MutableState<() -> Unit> = remember { mutableStateOf({}) }
+    timerViewModel.refresh()
+    val onPromptConfirmm: MutableState<() -> Unit> = remember { mutableStateOf({}) }
     val activeBreakLightColor = Color(130, 85, 255, 255)
     val activeFocusLightColor = Color(255, 224, 70, 255)
     val hours by timerViewModel.hours
@@ -205,18 +202,7 @@ fun ActiveTimerBody(
     timerViewModel.refresh()
 
     Box {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    brush = Brush.linearGradient(
-                        colors = listOf(Color.Black, Color.DarkGray, Color.Black)
-                    )
-                )
-                .padding(30.dp),
-            verticalArrangement = Arrangement.SpaceEvenly,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+        ShinyBlackContainer {
             Spacer(Modifier.height(50.dp))
             Column(
                 modifier = Modifier
@@ -309,7 +295,7 @@ fun ActiveTimerBody(
                 SkipButton(
                     onClick = {
                         if( settings.showCoinWarning ) {
-                            promptFunction.value = {
+                            onPromptConfirmm.value = {
                                 timerViewModel.skip()
                                 timerViewModel.sync()
                             }
@@ -318,7 +304,6 @@ fun ActiveTimerBody(
                             timerViewModel.skip()
                             timerViewModel.sync()
                         }
-
                     }
                 )
             }
@@ -327,7 +312,7 @@ fun ActiveTimerBody(
 
         ConfirmationOverlay(enabled = shouldPrompt.value && settings.showCoinWarning,
             onConfirmAction = {
-                promptFunction.value()
+                onPromptConfirmm.value()
                 shouldPrompt.value = false
             },
             onReject = {
@@ -346,7 +331,7 @@ fun ActiveTimerBody(
             "Timer state:" to timerViewModel.currentState.value,
             "User activity: " to detectedActivityToString(BonusManager.latestActivity),
             "Multiplier: " to if(isOnBreak) {BonusManager.getBreakBonus()} else {BonusManager.getFocusBonus() },
-            "Reward" to timerViewModel.points.intValue,
+            "Reward" to timerViewModel.points.intValue
         ))
     }
 }
@@ -380,17 +365,18 @@ fun ProgressDisplay(
 }
 
 @Composable
-fun CoinDisplay(
+fun CoinDisplay (
     lightColor: Color,
     coins: Int
 ) {
     LitContainer(
         lightColor = lightColor,
-        height = 200f,
+        height = 120f,
         rounding = 16.dp
     ) {
         Row (
-            modifier = Modifier.width(100.dp)
+            modifier = Modifier
+                .width(100.dp)
                 .padding(8.dp, 0.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween

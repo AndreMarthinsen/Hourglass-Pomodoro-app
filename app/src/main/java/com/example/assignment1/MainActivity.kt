@@ -31,7 +31,10 @@ import com.google.android.gms.location.ActivityTransition
 import com.google.android.gms.location.ActivityTransitionRequest
 import com.google.android.gms.location.DetectedActivity
 import androidx.compose.runtime.*
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.assignment1.recievers.ActivityTransitionReceiver
+import com.example.assignment1.ui.AppViewModelProvider
+import com.example.assignment1.ui.preset.timer.ActiveTimerViewModel
 
 
 @ExperimentalAnimationApi
@@ -144,10 +147,12 @@ class MainActivity : ComponentActivity() {
         setContent {
             ProjectTheme {
                 val navController = rememberNavController()
+                val timerViewModel: ActiveTimerViewModel = viewModel(factory = AppViewModelProvider.Factory)
                 Surface {
                     if(isBound.value) {
+                        timerViewModel.timerService = timerService
                         PomodoroNavHost(
-                            timerService = timerService,
+                            timerViewModel = timerViewModel,
                             navController = navController
                         )
                     }

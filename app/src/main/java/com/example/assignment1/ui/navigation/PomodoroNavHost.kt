@@ -34,7 +34,8 @@ import com.example.assignment1.ui.unlockables.UnlockableStoreScreen
 fun PomodoroNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
-    timerService: TimerService
+//    timerService: TimerService
+    timerViewModel: ActiveTimerViewModel
 ) {
     NavHost(
         navController = navController,
@@ -52,11 +53,9 @@ fun PomodoroNavHost(
                 type = NavType.IntType
             })
         ) { backStackEntry ->
-            val parentViewModel: ActiveTimerViewModel = viewModel(factory= AppViewModelProvider.Factory)
-            parentViewModel.timerService = timerService
             ActiveTimerScreen(
                 navigateBack = { navController.popBackStack() },
-                viewModel = parentViewModel,
+                viewModel = timerViewModel,
                 navController = navController,
                 presetID = backStackEntry.arguments?.getInt("presetId")?:0
             )

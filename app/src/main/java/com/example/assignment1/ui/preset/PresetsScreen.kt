@@ -239,7 +239,7 @@ private fun PresetDisplay(
                         contentDescription = "Break Icon",
                     )
 
-                    Text("${preset.focusLength}m")
+                    Text(" ${preset.focusLength}m")
                 }
                 Row() {
                     Icon(
@@ -247,7 +247,7 @@ private fun PresetDisplay(
                         painter = painterResource(id = R.drawable.break_icon),
                         contentDescription = "Break Icon",
                     )
-                    Text("${preset.breakLength}m / ${preset.longBreakLength}m")
+                    Text(" ${preset.breakLength}m / ${preset.longBreakLength}m")
                 }
                 Row() {
                     Icon(
@@ -255,7 +255,7 @@ private fun PresetDisplay(
                         painter = painterResource(id = R.drawable.goal_icon),
                         contentDescription = "Break Icon",
                     )
-                    Text("${preset.roundsInSession} x ${preset.totalSessions}")
+                    Text(" ${preset.roundsInSession} x ${preset.totalSessions}")
                 }
                 IconButton(
                     onClick = { onStart(preset.id) },

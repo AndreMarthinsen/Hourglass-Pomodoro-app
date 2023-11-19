@@ -230,7 +230,15 @@ fun ActiveTimerBody(
             )  {
                 ResetButton(
                     enabled = timerState != TimerService.State.Idle && timerState != TimerService.State.Reset,
-                    onReset = { timerViewModel.reset() },
+                    onReset = {
+                        if( settings.showCoinWarning ) {
+                            onPromptConfirm.value = {
+                                timerViewModel.reset()
+                            }
+                            shouldPrompt = true
+                        } else {
+                            timerViewModel.reset()
+                        }},
                     size = 80.dp
                 )
                 PlayPauseButton(

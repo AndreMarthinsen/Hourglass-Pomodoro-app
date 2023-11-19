@@ -101,7 +101,7 @@ class ActiveTimerViewModel(
     fun setTimerService(timerService: TimerService) {
         this.timerService = timerService
         currentState = timerService.currentState
-        _currentTimerLength = timerService.currentTimeInSeconds
+        timerService.currentTimeInSeconds.value = _currentTimerLength.value
     }
 
 
@@ -169,6 +169,7 @@ class ActiveTimerViewModel(
 
     fun loadPreset(id: Int) {
         if(loadedPreset.id != id) {
+            pause()
             timerServiceIsSetup = false
             presetRepository.getPresetStream(id).let { flow ->
                 viewModelScope.launch {

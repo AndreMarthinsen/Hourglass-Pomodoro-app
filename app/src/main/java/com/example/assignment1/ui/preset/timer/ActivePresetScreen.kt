@@ -184,15 +184,17 @@ fun ActiveTimerBody(
         ) {
             scrollScope.launch {
                 scrollState.animateScrollTo(
-                        getScrollFromDuration(
-                            timerViewModel.currentTimerLength.value,
-                            90.minutes,
-                            scrollState.maxValue, null
-                        )
+                    getScrollFromDuration(
+                        timerViewModel.currentTimerLength.value,
+                        90.minutes,
+                        scrollState.maxValue, null
                     )
+                )
             }
         }
     }
+
+
 
     Box {
         ShinyBlackContainer {
@@ -294,20 +296,40 @@ fun ProgressDisplay(
     elapsedSessions: Int
 ) {
     Row {
-        LitContainer(
-            lightColor = lightColor,
-            height = 100f,
-            rounding = 6.dp
-        ) {
-            Text("$elapsedRounds / $maxRounds")
+        Row{
+            Icon(
+                painter = painterResource(id = R.drawable.focus_icon),
+                contentDescription = "Image of a clock",
+                modifier = Modifier
+                    .size(20.dp)
+                    .align(Alignment.CenterVertically)
+            )
+            Spacer(Modifier.width(8.dp))
+            LitContainer(
+                lightColor = lightColor,
+                height = 100f,
+                rounding = 6.dp
+            ) {
+                Text("$elapsedRounds / $maxRounds")
+            }
         }
         Spacer(Modifier.width(100.dp))
-        LitContainer(
-            lightColor = lightColor,
-            height = 100f,
-            rounding = 6.dp
-        ) {
-            Text("$elapsedSessions / $maxSessions")
+        Row {
+            Icon(
+                painter = painterResource(id = R.drawable.goal_icon),
+                contentDescription = "Image of a clock",
+                modifier = Modifier
+                    .size(20.dp)
+                    .align(Alignment.CenterVertically)
+            )
+            Spacer(Modifier.width(8.dp))
+            LitContainer(
+                lightColor = lightColor,
+                height = 100f,
+                rounding = 6.dp
+            ) {
+                Text("$elapsedSessions / $maxSessions")
+            }
         }
     }
 }

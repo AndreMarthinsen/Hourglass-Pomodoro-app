@@ -385,18 +385,7 @@ fun ActiveTimerBody(
             }
         } else { Color.DarkGray }
         currentLightColor.animateTo(targetColor, animationSpec = tween(1000))
-//        scrollScope.launch {
-//            scrollState.animateScrollTo(
-//                getScrollFromDuration(
-//                    timerViewModel.currentTimerLength.value,
-//                    90.minutes,
-//                    scrollState.maxValue, null
-//                )
-//            )
-//        }
     }
-
-
 
     if(scrollState.isScrollInProgress) {
         if (!scrollEventToHandle) {
@@ -455,8 +444,6 @@ fun ActiveTimerBody(
                 },
                 coins = timerViewModel.points.intValue
             )
-
-            // BUTTON ROW
             Row(
                 Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
@@ -464,10 +451,7 @@ fun ActiveTimerBody(
             )  {
                 ResetButton(
                     enabled = timerState != TimerService.State.Idle && timerState != TimerService.State.Reset,
-                    onReset = {
-                        timerViewModel.reset()
-//                        timerViewModel.sync()
-                    },
+                    onReset = { timerViewModel.reset() },
                     size = 80.dp
                 )
                 PlayPauseButton(
@@ -481,12 +465,10 @@ fun ActiveTimerBody(
                         if( settings.showCoinWarning ) {
                             onPromptConfirm.value = {
                                 timerViewModel.skip()
-//                                timerViewModel.sync()
                             }
                             shouldPrompt = true
                         } else {
                             timerViewModel.skip()
-//                            timerViewModel.sync()
                         }
                     }
                 )
@@ -507,6 +489,7 @@ fun ActiveTimerBody(
             Text("${timerViewModel.points.intValue} coins will be lost")
             Text("Do you want to proceed?")
         }
+
         DebugOverlay(debugInfo = mapOf(
             "Timer state:" to timerViewModel.currentState.value,
             "User activity: " to detectedActivityToString(BonusManager.latestActivity),

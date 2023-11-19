@@ -45,6 +45,9 @@ import com.example.assignment1.PomodoroTopAppBar
 import com.example.assignment1.data.preset.Preset
 import com.example.assignment1.ui.AppViewModelProvider
 import com.example.assignment1.ui.navigation.NavigationDestination
+import com.example.assignment1.ui.visuals.MetallicContainer
+import com.example.assignment1.ui.visuals.RoundMetalButton
+import com.example.assignment1.ui.visuals.ShinyBlackContainer
 import kotlinx.coroutines.launch
 
 object PresetsDestination : NavigationDestination {
@@ -57,6 +60,7 @@ object PresetsDestination : NavigationDestination {
 fun PresetsScreen(
     navigateToPresetEdit: (Int) -> Unit,
     navigateToActivePreset: (Int) -> Unit,
+    navigateBack: () -> Unit,
     modifier: Modifier = Modifier,
     navController: NavController,
     viewModel: PresetsViewModel = viewModel(factory = AppViewModelProvider.Factory)
@@ -69,16 +73,14 @@ fun PresetsScreen(
         topBar = {
             PomodoroTopAppBar(
                 title = "Presets",
-                canNavigateBack = false,
+                canNavigateBack = true,
+                navigateUp = navigateBack,
                 scrollBehavior = scrollBehavior,
                 navController = navController
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { navigateToPresetEdit(0) },
-                shape = MaterialTheme.shapes.medium
-            ) {
+            RoundMetalButton(size = 80.dp, onClick = { navigateToPresetEdit(0)  }) {
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = "To Presets"
@@ -87,18 +89,20 @@ fun PresetsScreen(
         }
     ) {
         innerPadding ->
-        PresetsBody(
-            presetList = presetsUiState.presetList,
-            modifier = modifier
-            .padding(innerPadding),
-            onEdit = { navigateToPresetEdit(it) },
-            onDelete = {
-                coroutineScope.launch {
-                    viewModel.deletePreset(it)
-                }
-            },
-            onStart = { navigateToActivePreset(it) }
-        )
+        ShinyBlackContainer {
+            PresetsBody(
+                presetList = presetsUiState.presetList,
+                modifier = modifier
+                    .padding(innerPadding),
+                onEdit = { navigateToPresetEdit(it) },
+                onDelete = {
+                    coroutineScope.launch {
+                        viewModel.deletePreset(it)
+                    }
+                },
+                onStart = { navigateToActivePreset(it) }
+            )
+        }
     }
 }
 
@@ -153,93 +157,94 @@ private fun PresetDisplay(
         mutableStateOf(false)
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.primary)
-            .padding(5.dp)
-    ) {
-        Row(
+    MetallicContainer(height = 40f, rounding = 6.dp) {
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(5.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+                .padding(5.dp)
         ) {
-            Icon(
-                Icons.Filled.Face,
-                "Timer Icon"
-            )
-            Text(preset.name)
-            Box {
-                IconButton(
-                    enabled = true,
-                    onClick = {isExpanded = !isExpanded},
-                    content = {
-                        Icon(
-                            Icons.Filled.MoreVert,
-                            "Presets options"
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(5.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    Icons.Filled.Face,
+                    "Timer Icon"
+                )
+                Text(preset.name)
+                Box {
+                    IconButton(
+                        enabled = true,
+                        onClick = { isExpanded = !isExpanded },
+                        content = {
+                            Icon(
+                                Icons.Filled.MoreVert,
+                                "Presets options"
+                            )
+                        }
+                    )
+                    DropdownMenu(
+                        expanded = isExpanded,
+                        onDismissRequest = { isExpanded = false }
+
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Edit preset") },
+                            onClick = { onEdit(preset.id) },
+                            trailingIcon = {
+                                Icon(
+                                    Icons.Filled.Edit,
+                                    "Edit preset"
+                                )
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Delete preset") },
+                            onClick = {
+                                onDelete(preset.id)
+                            },
+                            trailingIcon = {
+                                Icon(
+                                    Icons.Filled.Delete,
+                                    "Delete Preset"
+                                )
+                            }
                         )
                     }
-                )
-                DropdownMenu(
-                    expanded = isExpanded,
-                    onDismissRequest = { isExpanded = false }
-
-                ) {
-                    DropdownMenuItem(
-                        text = { Text("Edit preset")},
-                        onClick = { onEdit(preset.id) },
-                        trailingIcon = {
-                            Icon(
-                                Icons.Filled.Edit,
-                                "Edit preset"
-                            )
-                        }
-                    )
-                    DropdownMenuItem(
-                        text = { Text("Delete preset") },
-                        onClick = {
-                            onDelete(preset.id)
-                        },
-                        trailingIcon = {
-                            Icon(
-                                Icons.Filled.Delete,
-                                "Delete Preset"
-                            )
-                        }
-                    )
                 }
             }
-        }
-        Spacer(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(2.dp)
-                .background(Color.Black)
-        )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(5.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {// TODO: Clock icon
-            Text("" + preset.focusLength + " / " + preset.breakLength + "")
-            Text("Sessions: " + preset.totalSessions)
-            IconButton(
-                onClick = { onStart(preset.id) },
-                content = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon( // TODO: Size won't change with modifier
-                            Icons.Filled.KeyboardArrowRight,
-                            "Start Icon"
-                        )
-                    }
-                }
+            Spacer(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(2.dp)
+                    .background(Color.Black)
             )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(5.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {// TODO: Clock icon
+                Text("" + preset.focusLength + " / " + preset.breakLength + "")
+                Text("Sessions: " + preset.totalSessions)
+                IconButton(
+                    onClick = { onStart(preset.id) },
+                    content = {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon( // TODO: Size won't change with modifier
+                                Icons.Filled.KeyboardArrowRight,
+                                "Start Icon"
+                            )
+                        }
+                    }
+                )
+            }
         }
     }
 }

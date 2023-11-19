@@ -74,6 +74,7 @@ fun PomodoroNavHost(
             PresetsScreen(
                 navigateToPresetEdit = { navController.navigate("${PresetEditDestination.route}/${it}")},
                 navigateToActivePreset = {navController.navigate("${ActivePresetDestination.route}/${it}")},
+                navigateBack = { navController.popBackStack() },
                 navController = navController
             )
         }

@@ -77,7 +77,7 @@ fun PomodoroTopAppBar(
                 ),
                 scrollBehavior = scrollBehavior,
                 navigationIcon = {
-                    if (canNavigateBack) {
+                    if (navController.previousBackStackEntry != null) {
                         IconButton(onClick = navigateUp) {
                             Icon(
                                 imageVector = Icons.Filled.ArrowBack,

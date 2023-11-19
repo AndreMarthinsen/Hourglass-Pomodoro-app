@@ -183,7 +183,7 @@ class ActiveTimerViewModel(
                             Log.d("DB Access with id $id:", "Successfully loaded $this");
                             loadedPreset = this
                             this@ActiveTimerViewModel.setTimerServiceLengthFromPreset()
-//                            this@ActiveTimerViewModel.refresh()
+                            this@ActiveTimerViewModel.updateTimeUnits(this@ActiveTimerViewModel.currentTimerLength.value)
                         }
                     } catch (error: Error) {
                         Log.d("DB Access with id $id:", error.toString())
@@ -233,14 +233,6 @@ class ActiveTimerViewModel(
         }
     }
 
-//    fun refresh() {
-//        updateTimeUnits(timerService.currentTimeInSeconds.value)
-//        if(!isSetup) {
-//            setupRoundTime()
-//            refresh()
-//            isSetup = true
-//        }
-//    }
 
     /**
      * Skips the current timer and progresses it to the next round or session.
@@ -252,7 +244,6 @@ class ActiveTimerViewModel(
             pause()
             timerServiceIsSetup = false
             progressTimer()
-//            refresh()
         }
     }
 
@@ -272,6 +263,7 @@ class ActiveTimerViewModel(
         finishedPreset.value = false
         isBreak.value = false
         setTimerServiceLengthFromPreset()
+        updateTimeUnits(currentTimerLength.value)
     }
 
     fun setTimerLength(duration: Duration) {

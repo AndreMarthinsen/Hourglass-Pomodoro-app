@@ -30,6 +30,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -68,7 +69,7 @@ object ActivePresetDestination : NavigationDestination {
     override val route = "preset_active"
     override val titleRes = 1
     const val presetIdArg = "presetId"
-    val routeWithArgs = "$route?$presetIdArg={$presetIdArg}"
+    val routeWithArgs = "$route/{$presetIdArg}"
 }
 
 
@@ -114,6 +115,227 @@ fun ActiveTimerScreen(
 }
 
 
+//@SuppressLint("CoroutineCreationDuringComposition")
+//@Composable
+//fun ActiveTimerBody(
+//    timerViewModel: ActiveTimerViewModel,
+//    modifier: Modifier = Modifier
+//) {
+//    val settings : Settings by timerViewModel.settingsUiState.collectAsState()
+//    val scrollScope = rememberCoroutineScope()
+//    val lightScope = rememberCoroutineScope()
+//    val scrollState = rememberScrollState(0)
+//    val currentLightColor = remember { Animatable(Color.DarkGray) }
+//    val shouldPrompt = remember { mutableStateOf(false) }
+//    timerViewModel.refresh()
+//    val onPromptConfirmm: MutableState<() -> Unit> = remember { mutableStateOf({}) }
+//    val activeBreakLightColor = Color(130, 85, 255, 255)
+//    val activeFocusLightColor = Color(255, 224, 70, 255)
+//    val hours by timerViewModel.hours
+//    val minutes by timerViewModel.minutes
+//    val seconds by timerViewModel.seconds
+//    val timerState by timerViewModel.currentState
+//    val isOnBreak by timerViewModel.isBreak
+//
+//    timerViewModel.onTickEvent = {
+//        if(!scrollState.isScrollInProgress) {
+//            scrollScope.launch {
+//                scrollState.scrollTo(
+//                    getScrollFromDuration(
+//                        timerViewModel.currentTimerLength.value,
+//                        90.minutes,
+//                        scrollState.maxValue, null
+//                    )
+//                )
+//            }
+//        }
+//    }
+//
+//    timerViewModel.onSync = {
+//        scrollScope.launch {
+//            scrollState.animateScrollTo(
+//                getScrollFromDuration(
+//                    timerViewModel.currentTimerLength.value,
+//                    90.minutes,
+//                    scrollState.maxValue, null
+//                )
+//            )
+//        }
+//    }
+//
+//    timerViewModel.onTimerFinished = {
+//        lightScope.launch {
+//            currentLightColor.animateTo(if (isOnBreak) {
+//                activeBreakLightColor
+//            } else {
+//                activeFocusLightColor
+//            }, tween(1000))
+//        }
+//    }
+//
+//    timerViewModel.refresh()
+//
+//    var scrollEventToHandle by remember { mutableStateOf(false) }
+//
+//    if(scrollState.isScrollInProgress) {
+//        if (!scrollEventToHandle) {
+//            timerViewModel.pause()
+//            lightScope.launch {
+//                currentLightColor.animateTo(Color.DarkGray, animationSpec = tween(1000))
+//            }
+//        }
+//        timerViewModel.currentTimerLength.value = getDurationFromScroll(
+//            scrollState, 90.minutes, 60
+//        )
+//        scrollEventToHandle = true
+//    } else if (scrollEventToHandle) {
+//        scrollEventToHandle = false
+//        if(scrollState.value != getScrollFromDuration(
+//                timerViewModel.currentTimerLength.value,
+//                90.minutes,
+//                scrollState.maxValue, null
+//            )
+//        ) {
+//            timerViewModel.sync()
+//        }
+//    }
+//
+//    Box {
+//        ShinyBlackContainer {
+//            Spacer(Modifier.height(50.dp))
+//            Column(
+//                modifier = Modifier
+//                    .background(
+//                        Brush.linearGradient(listOf(Color.Gray, Color.White, Color.Gray)),
+//                        RoundedCornerShape(16.dp)
+//                    )
+//                    .fillMaxWidth()
+//                    .border(
+//                        BorderStroke(
+//                            2.dp,
+//                            Brush.linearGradient(
+//                                listOf(
+//                                    Color.DarkGray,
+//                                    Color.Gray,
+//                                    Color.LightGray
+//                                )
+//                            )
+//                        ),
+//                        RoundedCornerShape(16.dp)
+//                    )
+//                    .padding(16.dp),
+//                horizontalAlignment = Alignment.CenterHorizontally,
+//                verticalArrangement = Arrangement.Center
+//            ) {
+//                ProgressDisplay(
+//                    lightColor = currentLightColor.value,
+//                    maxRounds = timerViewModel.loadedPreset.roundsInSession,
+//                    elapsedRounds = timerViewModel.elapsedRounds.intValue,
+//                    maxSessions = timerViewModel.loadedPreset.totalSessions,
+//                    elapsedSessions = timerViewModel.elapsedSessions.intValue
+//                )
+//                Spacer(modifier = Modifier.height(8.dp))
+//                TimerDisplay(
+//                    lightColor = currentLightColor.value,
+//                    hours = hours, minutes = minutes , seconds = seconds)
+//                TimerAdjustmentBar (
+//                    scrollState = scrollState,
+//                    lightColor = currentLightColor.value
+//                )
+//            }
+//
+//            CoinDisplay(
+//                lightColor = if(timerViewModel.points.intValue != 0) {
+//                    currentLightColor.value
+//                } else {
+//                    Color.DarkGray
+//                },
+//                coins = timerViewModel.points.intValue
+//            )
+//
+//            // BUTTON ROW
+//            Row(
+//                Modifier.fillMaxWidth(),
+//                horizontalArrangement = Arrangement.SpaceEvenly,
+//                verticalAlignment = Alignment.CenterVertically
+//            )  {
+//                ResetButton(
+//                    enabled = timerState != TimerService.State.Idle && timerState != TimerService.State.Reset,
+//                    onReset = {
+//                        timerViewModel.reset()
+//                        timerViewModel.sync()
+//                        lightScope.launch {
+//                            currentLightColor.animateTo(Color.DarkGray, animationSpec = tween(1000))
+//                        }
+//                    },
+//                    size = 80.dp
+//                )
+//                PlayPauseButton(
+//                    timerIsRunning = timerState == TimerService.State.Running,
+//                    onPlay = {
+//                        timerViewModel.start()
+//                        lightScope.launch {
+//                            currentLightColor.animateTo(
+//                                if (isOnBreak) {
+//                                    activeBreakLightColor
+//                                } else {
+//                                    activeFocusLightColor
+//                                },
+//                                animationSpec = tween(1000)
+//                            )
+//                        }},
+//                    onPause = {
+//                        timerViewModel.pause()
+//                        lightScope.launch {
+//                            currentLightColor.animateTo(Color.DarkGray, animationSpec = tween(1000))
+//                        }},
+//                    size = 120.dp
+//                )
+//                SkipButton(
+//                    onClick = {
+//                        if( settings.showCoinWarning ) {
+//                            onPromptConfirmm.value = {
+//                                timerViewModel.skip()
+//                                timerViewModel.sync()
+//                            }
+//                            shouldPrompt.value = true
+//                        } else {
+//                            timerViewModel.skip()
+//                            timerViewModel.sync()
+//                        }
+//                    }
+//                )
+//            }
+//            Spacer(Modifier.height(30.dp))
+//        }
+//
+//        ConfirmationOverlay(enabled = shouldPrompt.value && settings.showCoinWarning,
+//            onConfirmAction = {
+//                onPromptConfirmm.value()
+//                shouldPrompt.value = false
+//            },
+//            onReject = {
+//                shouldPrompt.value = false
+//            },
+//            onDisableWarning = {
+//                timerViewModel.viewModelScope.launch {
+//                    timerViewModel.settingsRepository.updateCoinWarning(false)
+//                }
+//            }
+//        ) {
+//            Text("${timerViewModel.points.intValue} coins will be lost")
+//            Text("Do you want to proceed?")
+//        }
+//        DebugOverlay(debugInfo = mapOf(
+//            "Timer state:" to timerViewModel.currentState.value,
+//            "User activity: " to detectedActivityToString(BonusManager.latestActivity),
+//            "Multiplier: " to if(isOnBreak) {BonusManager.getBreakBonus()} else {BonusManager.getFocusBonus() },
+//            "Reward" to timerViewModel.points.intValue
+//        ))
+//    }
+//}
+
+
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun ActiveTimerBody(
@@ -135,6 +357,12 @@ fun ActiveTimerBody(
     val seconds by timerViewModel.seconds
     val timerState by timerViewModel.currentState
     val isOnBreak by timerViewModel.isBreak
+
+//    LaunchedEffect(currentTimerLength.value)) {
+//
+//    }
+
+
 
     timerViewModel.onTickEvent = {
         if(!scrollState.isScrollInProgress) {
@@ -198,8 +426,6 @@ fun ActiveTimerBody(
             timerViewModel.sync()
         }
     }
-
-    timerViewModel.refresh()
 
     Box {
         ShinyBlackContainer {
@@ -335,8 +561,6 @@ fun ActiveTimerBody(
         ))
     }
 }
-
-
 @Composable
 fun ProgressDisplay(
     lightColor: Color,

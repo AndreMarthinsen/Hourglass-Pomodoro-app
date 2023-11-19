@@ -26,7 +26,7 @@ abstract class UnlockableDatabase : RoomDatabase() {
                         UnlockableDatabase::class.java,
                         "unlockable_database")
                     .fallbackToDestructiveMigration()
-                    .addCallback(seedDataBaseCallback(context))
+                    //.addCallback(seedDataBaseCallback(context))
                     .build()
                     .also { Instance = it }
             }

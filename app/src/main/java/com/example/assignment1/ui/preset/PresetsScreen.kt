@@ -238,7 +238,6 @@ private fun PresetDisplay(
                         painter = painterResource(id = R.drawable.focus_icon),
                         contentDescription = "Break Icon",
                     )
-
                     Text(" ${preset.focusLength}m")
                 }
                 Row() {

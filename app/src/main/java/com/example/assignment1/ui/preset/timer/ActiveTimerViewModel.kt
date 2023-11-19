@@ -99,9 +99,11 @@ class ActiveTimerViewModel(
     }
 
     fun setTimerService(timerService: TimerService) {
+        val timerStartValue = _currentTimerLength.value
         this.timerService = timerService
         currentState = timerService.currentState
-        timerService.currentTimeInSeconds.value = _currentTimerLength.value
+        _currentTimerLength = timerService.currentTimeInSeconds
+        _currentTimerLength.value = timerStartValue
     }
 
 

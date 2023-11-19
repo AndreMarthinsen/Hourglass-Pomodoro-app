@@ -150,7 +150,7 @@ class MainActivity : ComponentActivity() {
                 val timerViewModel: ActiveTimerViewModel = viewModel(factory = AppViewModelProvider.Factory)
                 Surface {
                     if(isBound.value) {
-                        timerViewModel.timerService = timerService
+                        timerViewModel.setTimerService(timerService)
                         PomodoroNavHost(
                             timerViewModel = timerViewModel,
                             navController = navController

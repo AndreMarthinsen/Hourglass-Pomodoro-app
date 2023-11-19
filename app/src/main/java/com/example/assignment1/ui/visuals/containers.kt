@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -100,6 +101,8 @@ fun MetallicContainer(
 
 
 
+
+
 @Composable
 fun RoundMetalButton(
     size: Dp,
@@ -127,6 +130,39 @@ fun RoundMetalButton(
     ) {
         content()
     }
+}
+
+@Composable
+fun ShinyMetalSurface(
+    content: @Composable () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .background(
+                Brush.linearGradient(listOf(Color.Gray, Color.White, Color.Gray)),
+                RoundedCornerShape(16.dp)
+            )
+            .fillMaxWidth()
+            .border(
+                BorderStroke(
+                    2.dp,
+                    Brush.linearGradient(
+                        listOf(
+                            Color.DarkGray,
+                            Color.Gray,
+                            Color.LightGray
+                        )
+                    )
+                ),
+                RoundedCornerShape(16.dp)
+            )
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        content()
+    }
+
 }
 
 

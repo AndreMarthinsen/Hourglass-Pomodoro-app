@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Application
 import android.media.MediaPlayer
 import android.util.Log
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
@@ -15,17 +16,15 @@ import kotlinx.coroutines.flow.first
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import androidx.lifecycle.viewModelScope
-import com.example.assignment1.PomodoroApplication
 import com.example.assignment1.R
 import com.example.assignment1.data.Settings
 import com.example.assignment1.data.SettingsRepository
-import com.example.assignment1.data.dataStore
-import com.google.android.gms.location.DetectedActivity
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlin.time.Duration
 import kotlin.time.DurationUnit
 
 
@@ -33,7 +32,7 @@ import kotlin.time.DurationUnit
 
 class ActiveTimerViewModel(
     private val presetRepository: PresetRepository,
-    val settingsRepository: SettingsRepository,
+    private val settingsRepository: SettingsRepository,
     application: Application,
 ) : AndroidViewModel(application) {
     private val defaultPreset = Preset(
@@ -63,7 +62,7 @@ class ActiveTimerViewModel(
     private val dingSound: MediaPlayer = MediaPlayer.create(this.getApplication(), R.raw.timer_ding)
 
     @SuppressLint("StaticFieldLeak")
-    lateinit var timerService : TimerService
+    private lateinit var timerService : TimerService
 
     var seconds = mutableStateOf("00")
         private set
@@ -71,10 +70,6 @@ class ActiveTimerViewModel(
         private set
     var hours = mutableStateOf("00")
         private set
-
-    var onTickEvent: () -> Unit = {}
-    var onTimerFinished: () -> Unit = {}
-    var onSync: () -> Unit = {}
 
     var loadedPreset = defaultPreset
         private set
@@ -87,30 +82,29 @@ class ActiveTimerViewModel(
     var finishedPreset = mutableStateOf( false )
         private set
 
-    private var hasSkipped = false
 
+    private var _currentTimerLength = mutableStateOf( 0.seconds )
     // For exposing the current timer start length
-    var currentTimerLength = mutableStateOf( 0.seconds )
+    val currentTimerLength: State<Duration> get() = _currentTimerLength
 
     var isBreak = mutableStateOf( false )
         private set
-    private var isSetup = false
+    private var timerServiceIsSetup = false
     var currentState = mutableStateOf( TimerService.State.Idle )
+        private set
 
-    private fun setup() {
-        currentState = timerService.currentState
-        currentTimerLength = timerService.currentTimeInSeconds
-        timerService.currentTimeInSeconds.value = if (!isBreak.value) {
-            loadedPreset.focusLength.minutes
-        } else {
-            if(Math.floorMod(elapsedRounds.intValue, loadedPreset.roundsInSession) == 0) {
-                loadedPreset.longBreakLength.minutes
-            } else {
-                loadedPreset.breakLength.minutes
-            }
-        }
-        isSetup = true
+    init {
+        updateTimeUnits(loadedPreset.focusLength.minutes)
+        _currentTimerLength.value = loadedPreset.focusLength.minutes
     }
+
+    fun setTimerService(timerService: TimerService) {
+        this.timerService = timerService
+        currentState = timerService.currentState
+        _currentTimerLength = timerService.currentTimeInSeconds
+    }
+
+
 
 
     //Sets the new state of showCoinWarning
@@ -120,33 +114,34 @@ class ActiveTimerViewModel(
         }
     }
 
+    /**
+     * Starts the timerService with the current timer length
+     */
     fun start () {
         Log.d("ActiveTimerViewModel", "start called")
-        if(!isSetup) {
-            setup()
-            isSetup = true
+        if(!timerServiceIsSetup) {
+            setTimerServiceLengthFromPreset()
+            timerServiceIsSetup = true
         }
         timerService.start(
             onTickEvent = {
-                onTickEvent()
-                if(currentTimerLength.value.toInt(DurationUnit.SECONDS) % 5 == 0) {
+                if(_currentTimerLength.value.toInt(DurationUnit.SECONDS) % 5 == 0) {
                     points.intValue += if(isBreak.value) {
                         BonusManager.getBreakBonus()
                     } else {
                         BonusManager.getFocusBonus()
                     }
                 }
-                updateTimeUnits()
+                updateTimeUnits(timerService.currentTimeInSeconds.value)
             },
             onTimerFinish = {
                 //TODO Skip causes onTimerFinished to be called repeatedly
                 //TODO Tilting device causes interface to lose track of state
-                onTimerFinished()
                 depositPoints()
                 dingSound.start()
-                this.progressTimer()
+                progressTimer()
                 pause()
-                isSetup = false
+                timerServiceIsSetup = false
                 if(!this.finishedPreset.value) {
                     start()
                 }
@@ -163,8 +158,8 @@ class ActiveTimerViewModel(
     }
 
 
-    private fun updateTimeUnits() {
-        this.currentTimerLength.value.toComponents { hours, minutes, seconds, _ ->
+    private fun updateTimeUnits(duration: Duration) {
+        duration.toComponents { hours, minutes, seconds, _ ->
             this@ActiveTimerViewModel.hours.value = hours.toInt().pad()
             this@ActiveTimerViewModel.minutes.value = minutes.pad()
             this@ActiveTimerViewModel.seconds.value = seconds.pad()
@@ -174,7 +169,7 @@ class ActiveTimerViewModel(
 
     fun loadPreset(id: Int) {
         if(loadedPreset.id != id) {
-            isSetup = false
+            timerServiceIsSetup = false
             presetRepository.getPresetStream(id).let { flow ->
                 viewModelScope.launch {
                     try {
@@ -187,7 +182,8 @@ class ActiveTimerViewModel(
                         }?.run {
                             Log.d("DB Access with id $id:", "Successfully loaded $this");
                             loadedPreset = this
-                            this@ActiveTimerViewModel.setup()
+                            this@ActiveTimerViewModel.setTimerServiceLengthFromPreset()
+//                            this@ActiveTimerViewModel.refresh()
                         }
                     } catch (error: Error) {
                         Log.d("DB Access with id $id:", error.toString())
@@ -198,6 +194,11 @@ class ActiveTimerViewModel(
     }
 
 
+    /**
+     * Progresses the timer to the next round or session, counting up elapsedRounds and elapsedSessions.
+     * Updates string time units to reflect the new timer length.
+     * Updates timer service with the new timer length.
+     */
     private fun progressTimer() {
         isBreak.value = !isBreak.value
         if(isBreak.value) {
@@ -211,35 +212,56 @@ class ActiveTimerViewModel(
         if(this.elapsedSessions.intValue == loadedPreset.totalSessions) {
             finishedPreset.value = true
         }
+        setTimerServiceLengthFromPreset()
+        updateTimeUnits(currentTimerLength.value)
     }
 
-    fun refresh() {
-        updateTimeUnits()
-        if(!isSetup) {
-            setup()
-            refresh()
-            sync()
-            isSetup = true
+    /**
+     * Sets up the timerService with the time of the current preset focusLength or
+     * breakLength depending on the current state of isBreak.
+     * Calling this method effectively resets the currently elapsed duration.
+     */
+    private fun setTimerServiceLengthFromPreset() {
+        _currentTimerLength.value = if (!isBreak.value) {
+            loadedPreset.focusLength.minutes
+        } else {
+            if(Math.floorMod(elapsedRounds.intValue, loadedPreset.roundsInSession) == 0) {
+                loadedPreset.longBreakLength.minutes
+            } else {
+                loadedPreset.breakLength.minutes
+            }
         }
     }
 
+//    fun refresh() {
+//        updateTimeUnits(timerService.currentTimeInSeconds.value)
+//        if(!isSetup) {
+//            setupRoundTime()
+//            refresh()
+//            isSetup = true
+//        }
+//    }
+
+    /**
+     * Skips the current timer and progresses it to the next round or session.
+     * If the preset is finished, this method does nothing.
+     */
     fun skip() {
         points.intValue = 0
         if(!finishedPreset.value) {
-            hasSkipped = true
             pause()
-            isSetup = false
+            timerServiceIsSetup = false
             progressTimer()
-            refresh()
+//            refresh()
         }
     }
 
     fun end() {
         finishedPreset.value = true
         timerService.end()
-        setup()
-        isSetup = true
-        updateTimeUnits()
+        setTimerServiceLengthFromPreset()
+        timerServiceIsSetup = true
+        updateTimeUnits(timerService.currentTimeInSeconds.value)
     }
 
     fun reset() {
@@ -249,22 +271,15 @@ class ActiveTimerViewModel(
         elapsedSessions.intValue = 0
         finishedPreset.value = false
         isBreak.value = false
-        setup()
+        setTimerServiceLengthFromPreset()
     }
 
-    fun adjustTime(time: Int) {
-        timerService.adjustTime(time)
-//        currentTimerLength = timerService.currentTimeInSeconds
-        updateTimeUnits()
+    fun setTimerLength(duration: Duration) {
+        _currentTimerLength.value = duration
+        updateTimeUnits(duration)
     }
 
     fun pause() {
         timerService.pause()
     }
-
-    fun sync() {
-        onSync()
-    }
-
-
 }

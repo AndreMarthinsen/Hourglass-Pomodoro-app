@@ -30,10 +30,10 @@ fun DropDownNavigation (
                 Text("Presets")
             }
         }
-        if(currentRoute != ActivePresetDestination.route ) {
+        if((navController.currentDestination ?: "") != ActivePresetDestination.route) {
             Button(
                 onClick = {
-                    navController.navigate( ActivePresetDestination.route )
+                    navController.navigate( ActivePresetDestination.routeNoPreset )
                 }
             ) {
                 Text("Timer")

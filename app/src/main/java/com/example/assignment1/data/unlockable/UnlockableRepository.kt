@@ -4,7 +4,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface UnlockableRepository {
 
-    fun getAllUnlockablesStream(): Flow<List<Unlockable>>
+    fun getAllUnlockablesStream(): Flow<MutableList<Unlockable>>
 
     fun getUnlockableStream(id: Int): Flow<Unlockable?>
 

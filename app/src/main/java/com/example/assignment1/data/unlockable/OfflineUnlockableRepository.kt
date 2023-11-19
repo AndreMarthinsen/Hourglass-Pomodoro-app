@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 class OfflineUnlockableRepository(
     private val unlockableDataAccessObject: UnlockableDataAccessObject) : UnlockableRepository
 {
-    override fun getAllUnlockablesStream(): Flow<List<Unlockable>> = unlockableDataAccessObject.getAllUnlockables()
+    override fun getAllUnlockablesStream(): Flow<MutableList<Unlockable>> = unlockableDataAccessObject.getAllUnlockables()
     override fun getUnlockableStream(id: Int): Flow<Unlockable?> = unlockableDataAccessObject.getUnlockable(id)
     override suspend fun deleteUnlockable(unlockable: Unlockable) = unlockableDataAccessObject.delete(unlockable)
     override suspend fun insertUnlockable(unlockable: Unlockable) = unlockableDataAccessObject.insert(unlockable)

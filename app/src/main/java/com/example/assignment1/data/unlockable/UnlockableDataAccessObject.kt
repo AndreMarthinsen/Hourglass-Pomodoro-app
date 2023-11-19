@@ -20,7 +20,7 @@ interface UnlockableDataAccessObject {
     suspend fun delete(unlockable: Unlockable)
 
     @Query("SELECT * from unlockables ORDER BY name ASC")
-    fun getAllUnlockables(): Flow<List<Unlockable>>
+    fun getAllUnlockables(): Flow<MutableList<Unlockable>>
 
     @Query("SELECT * from unlockables WHERE id = :id")
     fun getUnlockable(id: Int): Flow<Unlockable>

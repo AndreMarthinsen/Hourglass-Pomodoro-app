@@ -9,5 +9,5 @@ data class Unlockable(
     val id: Int = 0,
     val name: String,
     val cost: Int,
-    val purchased: Boolean
+    var purchased: Boolean
 )

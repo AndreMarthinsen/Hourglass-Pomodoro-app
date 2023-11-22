@@ -1,4 +1,4 @@
-package com.example.assignment1.ui.settings
+package com.example.assignment1.view_models
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,24 +9,21 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
-class SettingsViewModel (
-    private val settingsRepository: SettingsRepository
-) : ViewModel() {
+class NavbarViewModel(private val settingsRepository: SettingsRepository) : ViewModel() {
 
     val settingsUiState: StateFlow<Settings> =
         settingsRepository.getFromSettingsStore().map { it }
             .stateIn(
                 scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(1000),
+                started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
                 initialValue = Settings(0,false)
             )
 
-    suspend fun setCoinWarningsEnabled(enabled: Boolean) {
-        settingsRepository.updateCoinWarning(enabled)
+    companion object {
+        private const val TIMEOUT_MILLIS = 5_000L
     }
 
-    fun setActivityDetectionEnabled(enabled: Boolean) {
-
+    suspend fun incrementCurrency(amount: Int) {
+        settingsRepository.updateCurrency(settingsUiState.value.currency + amount)
     }
-
 }

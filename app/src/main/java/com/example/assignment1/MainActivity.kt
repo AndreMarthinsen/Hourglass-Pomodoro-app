@@ -32,9 +32,9 @@ import com.google.android.gms.location.ActivityTransitionRequest
 import com.google.android.gms.location.DetectedActivity
 import androidx.compose.runtime.*
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.assignment1.recievers.ActivityTransitionReceiver
-import com.example.assignment1.ui.AppViewModelProvider
-import com.example.assignment1.ui.preset.timer.ActiveTimerViewModel
+import com.example.assignment1.receivers.ActivityTransitionReceiver
+import com.example.assignment1.utility.AppViewModelProvider
+import com.example.assignment1.view_models.ActiveTimerViewModel
 
 
 @ExperimentalAnimationApi
@@ -45,6 +45,11 @@ class MainActivity : ComponentActivity() {
     private lateinit var activityTransitionClient : ActivityRecognitionClient
 
     private lateinit var timerService: TimerService
+
+    /**
+     * connection is a ServiceConnection object that is used to bind to the TimerService
+     * @see TimerService
+     */
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
             val binder = service as TimerService.TimerBinder
@@ -79,8 +84,9 @@ class MainActivity : ComponentActivity() {
             }
     }
 
+
     @RequiresApi(Build.VERSION_CODES.Q)
-    fun registerForActivityDetectionResult() {
+    fun registerForActivityRecognitionResult() {
        requestPermissionLauncher = registerForActivityResult(
             ActivityResultContracts.RequestPermission()
         ) { isGranted: Boolean ->
@@ -89,6 +95,10 @@ class MainActivity : ComponentActivity() {
     }
 
 
+    /**
+     * requestActivityUpdatePermission requests the ACTIVITY_RECOGNITION permission
+     * from the user if not already granted.
+     */
     @RequiresApi(Build.VERSION_CODES.Q)
     fun requestActivityUpdatePermission() {
         when {
@@ -108,6 +118,10 @@ class MainActivity : ComponentActivity() {
     }
 
 
+    /**
+     * requestActivityUpdates requests activity updates from the ActivityRecognitionClient.
+     * The updates are sent to the ActivityTransitionReceiver from the Google Activity Recognition API.
+     */
     private fun requestActivityUpdates() {
         val transitions = createTransitionList()
         val request = ActivityTransitionRequest(transitions)
@@ -136,7 +150,7 @@ class MainActivity : ComponentActivity() {
         this.activityTransitionClient = ActivityRecognition.getClient(this.application)
         super.onCreate(savedInstanceState)
 
-        registerForActivityDetectionResult()
+        registerForActivityRecognitionResult()
         requestActivityUpdatePermission()
         requestActivityUpdates()
 

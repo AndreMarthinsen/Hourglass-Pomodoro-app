@@ -1,4 +1,4 @@
-package com.example.assignment1.ui.preset
+package com.example.assignment1.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -22,10 +22,8 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -40,17 +38,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.assignment1.PomodoroTopAppBar
+import androidx.navigation.compose.rememberNavController
+import com.example.assignment1.ui.components.PomodoroTopAppBar
 import com.example.assignment1.R
 import com.example.assignment1.data.preset.Preset
-import com.example.assignment1.ui.AppViewModelProvider
+import com.example.assignment1.utility.AppViewModelProvider
 import com.example.assignment1.ui.navigation.NavigationDestination
-import com.example.assignment1.ui.visuals.MetallicContainer
-import com.example.assignment1.ui.visuals.RoundMetalButton
-import com.example.assignment1.ui.visuals.ShinyBlackContainer
+import com.example.assignment1.view_models.PresetsViewModel
+import com.example.assignment1.ui.components.MetallicContainer
+import com.example.assignment1.ui.components.RoundMetalButton
+import com.example.assignment1.ui.components.ShinyBlackContainer
 import kotlinx.coroutines.launch
 
 object PresetsDestination : NavigationDestination {
@@ -58,14 +59,27 @@ object PresetsDestination : NavigationDestination {
     override val titleRes = 3
 }
 
+
+/**
+ * Screen for viewing currently saved presets. The presets provides the user with
+ * the ability to edit, delete, and start a preset.
+ *
+ * @param navigateToPresetEdit Callback for when the user wants to edit a preset
+ * @param navigateToActivePreset Callback for when the user wants to start a preset
+ * @param navigateBack Callback for when the user wants to navigate back
+ * @param modifier Modifier for the screen
+ * @param navController Navigation controller for the screen
+ * @param viewModel The view model for the presets screen
+ */
 @OptIn(ExperimentalMaterial3Api::class)
+@Preview
 @Composable
 fun PresetsScreen(
-    navigateToPresetEdit: (Int) -> Unit,
-    navigateToActivePreset: (Int) -> Unit,
-    navigateBack: () -> Unit,
+    navigateToPresetEdit: (Int) -> Unit = {},
+    navigateToActivePreset: (Int) -> Unit = {},
+    navigateBack: () -> Unit = {},
     modifier: Modifier = Modifier,
-    navController: NavController,
+    navController: NavController = rememberNavController(),
     viewModel: PresetsViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val presetsUiState by viewModel.presetsUiState.collectAsState()
@@ -109,13 +123,25 @@ fun PresetsScreen(
     }
 }
 
+
+/**
+ * Body for the presets screen. Displays a list of presets.
+ *
+ * @param presetList The list of presets to display
+ * @param modifier Modifier for the body
+ * @param onDelete Callback for when a preset button is pressed
+ * @param onEdit Callback for when an edit button is pressed
+ * @param onStart Callback for when a start button is pressed
+ */
+@Preview
 @Composable
 fun PresetsBody(
-    presetList: List<Preset>,
     modifier: Modifier = Modifier,
-    onDelete: (Int) -> Unit,
-    onEdit: (Int) -> Unit,
-    onStart: (Int) -> Unit
+    presetList: List<Preset> = listOf(
+        Preset(0, "Test", 4, 2, 25, 5, 15)),
+    onDelete: (Int) -> Unit = {},
+    onEdit: (Int) -> Unit = {},
+    onStart: (Int) -> Unit = {}
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -129,13 +155,25 @@ fun PresetsBody(
     }
 }
 
+
+/**
+ * Displays a list of presets.
+ *
+ * @param presetList The list of presets to display
+ * @param modifier Modifier for the list
+ * @param onDelete Callback for when a preset button is pressed
+ * @param onEdit Callback for when an edit button is pressed
+ * @param onStart Callback for when a start button is pressed
+ */
+@Preview
 @Composable
 private fun PresetList(
-    presetList: List<Preset>,
     modifier: Modifier = Modifier,
-    onDelete: (Int) -> Unit,
-    onEdit: (Int) -> Unit,
-    onStart: (Int) -> Unit
+    presetList: List<Preset> = listOf(
+        Preset(0, "Test", 4, 2, 25, 5, 15)),
+    onDelete: (Int) -> Unit = {},
+    onEdit: (Int) -> Unit = {},
+    onStart: (Int) -> Unit = {}
 ) {
     LazyColumn(modifier = modifier) {
         items(items = presetList, key = {it.id}) {preset ->
@@ -148,13 +186,25 @@ private fun PresetList(
     }
 }
 
+
+/**
+ * Displays a single preset with information about break length, focus length
+ * along with buttons for editing, deleting and starting the preset.
+ *
+ * @param modifier Modifier for the preset
+ * @param preset The preset to display
+ * @param onDelete Callback for when the delete button is pressed
+ * @param onEdit Callback for when the edit button is pressed
+ * @param onStart Callback for when the start button is pressed
+ */
+@Preview
 @Composable
 private fun PresetDisplay(
-    preset: Preset,
-    onStart: (Int) -> Unit,
     modifier: Modifier = Modifier,
-    onDelete: (Int) -> Unit,
-    onEdit: (Int) -> Unit
+    preset: Preset = Preset(0, "Test", 4, 2, 25, 5, 15),
+    onStart: (Int) -> Unit = {},
+    onDelete: (Int) -> Unit = {},
+    onEdit: (Int) -> Unit = {}
 ) {
     var isExpanded by remember {
         mutableStateOf(false)

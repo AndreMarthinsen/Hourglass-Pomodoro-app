@@ -1,17 +1,15 @@
-package com.example.assignment1.ui.preset.timer
+package com.example.assignment1.utility
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.SystemClock
 import androidx.compose.foundation.ScrollState
-import com.example.assignment1.PomodoroApplication
-import com.example.assignment1.recievers.ActivityTransitionReceiver
+import com.example.assignment1.receivers.ActivityTransitionReceiver
 import com.google.android.gms.common.internal.safeparcel.SafeParcelableSerializer
 import com.google.android.gms.location.ActivityTransition
 import com.google.android.gms.location.ActivityTransitionEvent
 import com.google.android.gms.location.ActivityTransitionResult
-import com.google.android.gms.location.DetectedActivity
 import kotlin.math.roundToInt
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -73,12 +71,20 @@ fun getDurationFromScroll(scrollState: ScrollState, maxDuration: Duration, round
         DurationUnit.SECONDS))/roundingInSeconds).roundToInt()*roundingInSeconds).seconds
 }
 
+
+/**
+ * sendFakeTransitionEvent sends an intent to a provided context
+ * with a fake activity transition event. Used for practical testing during
+ * demonstration of the application.
+ *
+ * @param context - context to send intent to
+ * @param activity - activity to send in intent
+ */
 @SuppressLint("VisibleForTests")
 fun sendFakeTransitionEvent(context: Context, activity: Int) {
     val intent = Intent(context, ActivityTransitionReceiver::class.java)
     val events: ArrayList<ActivityTransitionEvent> = arrayListOf()
 
-    // create fake events
     events.add(
         ActivityTransitionEvent(
             activity,
@@ -87,7 +93,6 @@ fun sendFakeTransitionEvent(context: Context, activity: Int) {
         )
     )
 
-    // finally, serialize and send
     val result = ActivityTransitionResult(events)
     SafeParcelableSerializer.serializeToIntentExtra(
         result,

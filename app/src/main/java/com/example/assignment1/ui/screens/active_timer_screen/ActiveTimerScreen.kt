@@ -1,4 +1,4 @@
-package com.example.assignment1.ui.preset.timer
+package com.example.assignment1.ui.screens.active_timer_screen
 
 import android.annotation.SuppressLint
 import android.util.Log
@@ -46,23 +46,34 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.assignment1.PomodoroTopAppBar
+import com.example.assignment1.ui.components.PomodoroTopAppBar
 import com.example.assignment1.R
 import com.example.assignment1.data.Settings
 import com.example.assignment1.services.TimerService
 import com.example.assignment1.ui.navigation.NavigationDestination
-import com.example.assignment1.ui.visuals.LitContainer
-import com.example.assignment1.ui.visuals.ShinyBlackContainer
-import com.example.assignment1.ui.visuals.ShinyMetalSurface
+import com.example.assignment1.ui.components.LitContainer
+import com.example.assignment1.ui.components.ShinyBlackContainer
+import com.example.assignment1.ui.components.ShinyMetalSurface
+import com.example.assignment1.view_models.ActiveTimerViewModel
+import com.example.assignment1.services.BonusManager
+import com.example.assignment1.utility.AppViewModelProvider
+import com.example.assignment1.ui.components.ConfirmationOverlay
+import com.example.assignment1.ui.components.DebugOverlay
+import com.example.assignment1.ui.theme.ActiveBreakLightColor
+import com.example.assignment1.ui.theme.ActiveFocusLightColor
+import com.example.assignment1.utility.detectedActivityToString
+import com.example.assignment1.utility.getDurationFromScroll
+import com.example.assignment1.utility.getScrollFromDuration
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.minutes
 
 
-val activeBreakLightColor = Color(130, 85, 255, 255)
-val activeFocusLightColor = Color(255, 224, 70, 255)
+
 
 
 /**
@@ -122,11 +133,20 @@ fun ActiveTimerScreen(
 }
 
 
+/**
+ * The body of the active timer screen. Contains the timer display, the
+ * timer adjustment bar, the progress display, the coin display and the
+ * buttons to control the timer.
+ *
+ * @param modifier the modifier for the body
+ * @param timerViewModel the view model for the active timer screen
+ */
 @SuppressLint("CoroutineCreationDuringComposition")
+@Preview
 @Composable
 fun ActiveTimerBody(
-    timerViewModel: ActiveTimerViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    timerViewModel: ActiveTimerViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ) {
     val settings : Settings by timerViewModel.settingsUiState.collectAsState()
     val scrollScope = rememberCoroutineScope()
@@ -149,7 +169,8 @@ fun ActiveTimerBody(
                     getScrollFromDuration(
                         timerViewModel.currentTimerLength.value,
                         90.minutes,
-                        scrollState.maxValue, null))
+                        scrollState.maxValue, null)
+                )
             }
         }
     }
@@ -158,9 +179,9 @@ fun ActiveTimerBody(
     LaunchedEffect(timerViewModel.currentState.value, timerViewModel.isBreak.value) {
         val targetColor = if (timerViewModel.currentState.value == TimerService.State.Running) {
              if (isOnBreak) {
-                activeBreakLightColor
+                ActiveBreakLightColor
             } else {
-                activeFocusLightColor
+                ActiveFocusLightColor
             }
         } else { Color.DarkGray }
         currentLightColor.animateTo(targetColor, animationSpec = tween(1000))
@@ -172,7 +193,8 @@ fun ActiveTimerBody(
         }
         timerViewModel.setTimerLength( getDurationFromScroll(
             scrollState, 90.minutes, 60
-        ))
+        )
+        )
         scrollEventToHandle = true
     } else if (scrollEventToHandle) {
         scrollEventToHandle = false
@@ -231,7 +253,6 @@ fun ActiveTimerBody(
                 verticalAlignment = Alignment.CenterVertically
             )  {
                 ResetButton(
-                    enabled = timerState != TimerService.State.Idle && timerState != TimerService.State.Reset,
                     onReset = {
                         if( settings.showCoinWarning ) {
                             onPromptConfirm.value = {
@@ -282,18 +303,34 @@ fun ActiveTimerBody(
         DebugOverlay(debugInfo = mapOf(
             "Timer state:" to timerViewModel.currentState.value,
             "User activity: " to detectedActivityToString(BonusManager.latestActivity),
-            "Multiplier: " to if(isOnBreak) {BonusManager.getBreakBonus()} else {BonusManager.getFocusBonus() },
+            "Multiplier: " to if(isOnBreak) {
+                BonusManager.getBreakBonus()
+            } else {
+                BonusManager.getFocusBonus() },
             "Reward" to timerViewModel.points.intValue
         ))
     }
 }
+
+
+/**
+ * Displays the elapsed rounds and focus sessions out of the total in the
+ * currently loaded setting.
+ *
+ * @param lightColor the color of the light on the progress display
+ * @param maxRounds the total number of rounds in a session
+ * @param elapsedRounds the number of rounds completed in the current session
+ * @param maxSessions the total number of sessions in the preset
+ * @param elapsedSessions the number of sessions completed in the preset
+ */
+@Preview
 @Composable
 fun ProgressDisplay(
-    lightColor: Color,
-    maxRounds: Int,
-    elapsedRounds: Int,
-    maxSessions: Int,
-    elapsedSessions: Int
+    lightColor: Color = Color.DarkGray,
+    maxRounds: Int = 0,
+    elapsedRounds: Int = 0,
+    maxSessions: Int = 0,
+    elapsedSessions: Int = 0
 ) {
     Row {
         Row{
@@ -334,10 +371,19 @@ fun ProgressDisplay(
     }
 }
 
+
+/**
+ * An inset, lit section that displays the coins earned so far during the current
+ * running timer. The width expands to fit the coins earned.
+ *
+ * @param lightColor the color of the light on the progress display
+ * @param coins the number of coins earned so far
+ */
+@Preview
 @Composable
 fun CoinDisplay (
-    lightColor: Color,
-    coins: Int
+    lightColor: Color = Color.Yellow,
+    coins: Int = 0
 ) {
     LitContainer(
         lightColor = lightColor,
@@ -371,13 +417,20 @@ fun CoinDisplay (
 
 /**
  * Displays the current value of the timer.
+ *
+ * @param lightColor the color of the light
+ * @param hours the number of hours in the timer
+ * @param minutes the number of minutes in the timer
+ * @param seconds the number of seconds in the timer
+ *
  */
+@Preview
 @Composable
 fun TimerDisplay (
-    lightColor: Color,
-    hours: String,
-    minutes: String,
-    seconds: String
+    lightColor: Color = Color.Yellow,
+    hours: String = "00",
+    minutes: String = "00",
+    seconds: String = "00"
 ) {
     LitContainer(
         lightColor = lightColor,
@@ -406,12 +459,18 @@ fun TimerDisplay (
 
 
 /**
- * A scrollable timer wheel allowing for adjusting the current time
+ * A scrollable timer wheel allowing the display of the current time as
+ * numbers on a marked line. The visual has a top down light source.
+ * Markers above and below the timeline indicate the current time.
+ *
+ * @param scrollState the scroll state of the timer wheel
+ * @param lightColor the color of the light
  */
+@Preview
 @Composable
 fun TimerAdjustmentBar (
-    scrollState: ScrollState,
-    lightColor: Color
+    scrollState: ScrollState = rememberScrollState(0),
+    lightColor: Color = Color.Yellow
 ) {
     Column (
         horizontalAlignment = Alignment.CenterHorizontally
@@ -424,12 +483,16 @@ fun TimerAdjustmentBar (
 
 
 /**
- * A row of elements with indicators for each minute and each chunk of five minutes
+ * A row of indicators for each minute and each chunk of five minutes
+ *
+ * @param scrollState the scroll state of the timer wheel
+ * @param lightColor the color of the light
  */
+@Preview
 @Composable
 fun MinuteMarkers (
-    scrollState: ScrollState,
-    lightColor: Color
+    scrollState: ScrollState = rememberScrollState(0),
+    lightColor: Color = Color.Yellow
 ) {
     Box(modifier = Modifier
         .requiredWidth(300.dp)

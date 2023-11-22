@@ -1,4 +1,4 @@
-package com.example.assignment1.ui.preset.timer
+package com.example.assignment1.view_models
 
 import android.annotation.SuppressLint
 import android.app.Application
@@ -11,7 +11,6 @@ import androidx.lifecycle.AndroidViewModel
 import com.example.assignment1.data.preset.Preset
 import com.example.assignment1.data.preset.PresetRepository
 import com.example.assignment1.services.TimerService
-import com.example.assignment1.services.pad
 import kotlinx.coroutines.flow.first
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -19,6 +18,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.assignment1.R
 import com.example.assignment1.data.Settings
 import com.example.assignment1.data.SettingsRepository
+import com.example.assignment1.services.BonusManager
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -162,9 +162,9 @@ class ActiveTimerViewModel(
 
     private fun updateTimeUnits(duration: Duration) {
         duration.toComponents { hours, minutes, seconds, _ ->
-            this@ActiveTimerViewModel.hours.value = hours.toInt().pad()
-            this@ActiveTimerViewModel.minutes.value = minutes.pad()
-            this@ActiveTimerViewModel.seconds.value = seconds.pad()
+            this@ActiveTimerViewModel.hours.value = hours.toInt().toString().padStart(2, '0')
+            this@ActiveTimerViewModel.minutes.value = minutes.toString().padStart(2, '0')
+            this@ActiveTimerViewModel.seconds.value = seconds.toString().padStart(2, '0')
         }
     }
 
@@ -172,6 +172,7 @@ class ActiveTimerViewModel(
     fun loadPreset(id: Int) {
         if(loadedPreset.id != id) {
             pause()
+            reset()
             timerServiceIsSetup = false
             presetRepository.getPresetStream(id).let { flow ->
                 viewModelScope.launch {

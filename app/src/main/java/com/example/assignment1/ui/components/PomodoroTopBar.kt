@@ -1,4 +1,4 @@
-package com.example.assignment1
+package com.example.assignment1.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -7,12 +7,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -36,27 +34,39 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.example.assignment1.R
 import com.example.assignment1.data.Settings
-import com.example.assignment1.ui.AppViewModelProvider
-import com.example.assignment1.ui.navbar.NavbarViewModel
-import com.example.assignment1.ui.navigation.DropDownNavigation
-import com.example.assignment1.ui.unlockables.UnlockableStoreDestination
-import com.example.assignment1.ui.visuals.MetallicContainer
+import com.example.assignment1.utility.AppViewModelProvider
+import com.example.assignment1.ui.screens.UnlockableStoreDestination
+import com.example.assignment1.view_models.NavbarViewModel
 
 
+/**
+ * A modified [CenterAlignedTopAppBar] with themed styling and a back button.
+ *
+ * @param title - title to be displayed in the app bar
+ * @param canNavigateBack - whether or not the app bar should display a back button
+ * @param modifier - modifier for styling
+ * @param scrollBehavior - scroll behavior for the app bar
+ * @param navigateUp - function to be called when the back button is pressed
+ * @param navController - nav controller for use with dropdown navigation.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
+@Preview
 @Composable
 fun PomodoroTopAppBar(
-    title: String,
-    canNavigateBack: Boolean,
     modifier: Modifier = Modifier,
+    title: String = "Top Bar",
+    canNavigateBack: Boolean = true,
     scrollBehavior: TopAppBarScrollBehavior? = null,
     navigateUp: () -> Unit = {},
-    navController: NavController,
+    navController: NavController = rememberNavController(),
     viewModel: NavbarViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val unlockables : Settings by viewModel.settingsUiState.collectAsState()
@@ -103,7 +113,8 @@ fun PomodoroTopAppBar(
                         start = (Offset(0f, 0.0f)),
                         end = (Offset(700f, 500f))
                     ),
-                shape = RoundedCornerShape(0.dp))
+                    shape = RoundedCornerShape(0.dp)
+                )
                 .padding(5.dp),
             horizontalArrangement = Arrangement.End
         ) {
@@ -117,23 +128,26 @@ fun PomodoroTopAppBar(
             ) {
                 expanded = !expanded
             }
-
         }
-        Spacer(modifier = Modifier.height(1.dp)
+        Spacer(modifier = Modifier
+            .height(1.dp)
             .background(
-            brush = Brush.horizontalGradient(listOf(Color.White, Color.Gray)),
-        )
+                brush = Brush.horizontalGradient(listOf(Color.White, Color.Gray)),
+            )
             .fillMaxWidth())
-
-
     }
-
 }
 
+
+/**
+ * Displays the current currency balance of the user. When clicked, the user is
+ * navigated to the shop front.
+ */
+@Preview
 @Composable
 fun CurrencyDisplay(
-    currency: Int,
-    navigateToStore: () -> Unit
+    currency: Int = 0,
+    navigateToStore: () -> Unit = {}
 ) {
     MetallicContainer(height = 5f, rounding = 6.dp) {
         Row(

@@ -8,19 +8,18 @@ import androidx.navigation.compose.composable
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import com.example.assignment1.services.TimerService
-import com.example.assignment1.ui.AppViewModelProvider
-import com.example.assignment1.ui.preset.timer.ActivePresetDestination
-import com.example.assignment1.ui.preset.timer.ActiveTimerScreen
-import com.example.assignment1.ui.preset.timer.ActiveTimerViewModel
-import com.example.assignment1.ui.preset.PresetEditDestination
-import com.example.assignment1.ui.preset.PresetEditScreen
-import com.example.assignment1.ui.preset.PresetsDestination
-import com.example.assignment1.ui.preset.PresetsScreen
-import com.example.assignment1.ui.settings.SettingsDestination
-import com.example.assignment1.ui.settings.SettingsScreen
-import com.example.assignment1.ui.unlockables.UnlockableStoreDestination
-import com.example.assignment1.ui.unlockables.UnlockableStoreScreen
+import com.example.assignment1.utility.AppViewModelProvider
+import com.example.assignment1.ui.screens.active_timer_screen.ActivePresetDestination
+import com.example.assignment1.ui.screens.active_timer_screen.ActiveTimerScreen
+import com.example.assignment1.view_models.ActiveTimerViewModel
+import com.example.assignment1.ui.screens.PresetEditDestination
+import com.example.assignment1.ui.screens.PresetEditScreen
+import com.example.assignment1.ui.screens.PresetsDestination
+import com.example.assignment1.ui.screens.PresetsScreen
+import com.example.assignment1.ui.screens.SettingsDestination
+import com.example.assignment1.ui.screens.SettingsScreen
+import com.example.assignment1.ui.screens.UnlockableStoreDestination
+import com.example.assignment1.ui.screens.UnlockableStoreScreen
 
 /**
  * The application's mavhost, describing and facilitating navigation
@@ -28,13 +27,11 @@ import com.example.assignment1.ui.unlockables.UnlockableStoreScreen
  *
  * @param navController - the navigation controller, tracks navigation state
  * @param modifier - standard modifier-object
- * @param timerService - object used for time-tracking in ActivePresetScreen, see TimerService.kt
  */
 @Composable
 fun PomodoroNavHost(
-    navController: NavHostController,
     modifier: Modifier = Modifier,
-//    timerService: TimerService
+    navController: NavHostController,
     timerViewModel: ActiveTimerViewModel
 ) {
     NavHost(

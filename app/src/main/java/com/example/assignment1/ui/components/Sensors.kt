@@ -1,4 +1,4 @@
-package com.example.assignment1
+package com.example.assignment1.ui.components
 
 import android.content.Context
 import android.hardware.Sensor

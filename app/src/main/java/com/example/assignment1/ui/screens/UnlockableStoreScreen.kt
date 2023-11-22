@@ -1,6 +1,5 @@
-package com.example.assignment1.ui.unlockables
+package com.example.assignment1.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -23,33 +22,42 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.assignment1.PomodoroTopAppBar
+import com.example.assignment1.ui.components.PomodoroTopAppBar
 import com.example.assignment1.data.unlockable.Unlockable
-import com.example.assignment1.ui.AppViewModelProvider
+import com.example.assignment1.utility.AppViewModelProvider
 import com.example.assignment1.ui.navigation.NavigationDestination
-import com.example.assignment1.ui.visuals.MetallicContainer
-import com.example.assignment1.ui.visuals.RoundMetalButton
-import com.example.assignment1.ui.visuals.ShinyBlackContainer
-import kotlinx.coroutines.async
+import com.example.assignment1.ui.components.MetallicContainer
+import com.example.assignment1.ui.components.RoundMetalButton
+import com.example.assignment1.ui.components.ShinyBlackContainer
+import com.example.assignment1.view_models.UnlockableStoreViewModel
 import kotlinx.coroutines.launch
 
+
+/**
+ * Route for the unlockable store screen
+ */
 object UnlockableStoreDestination : NavigationDestination {
     override val route = "unlockable_store"
     override val titleRes = 8
 }
 
+
+/**
+ * Screen for the unlockable store where the user can exchange currency from their
+ * current balance with unlockables, such as new themes and sounds. Currently
+ * just a proof of concept with no actual content unlockable.
+ *
+ * @param viewModel The view model for the unlockable store screen
+ * @param navController Navigation controller for the screen
+ * @param navigateBack Callback for when the back button is pressed
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UnlockableStoreScreen(
@@ -84,13 +92,24 @@ fun UnlockableStoreScreen(
     }
 }
 
+
+/**
+ * Body of the unlockable store screen
+ *
+ * @param unlockablesList List of unlockables to display
+ * @param paddingValues Padding values for the body
+ * @param debugSeedDatabase Callback for when the seed database button is pressed
+ * @param debugClearDatabase Callback for when the clear database button is pressed
+ * @param onPurchase Callback for when an unlockable is purchased
+ */
+@Preview
 @Composable
 fun StoreBody(
-    unlockablesList: List<Unlockable>,
-    paddingValues: PaddingValues,
-    debugSeedDatabase: (List<Unlockable>) -> Unit,
-    debugClearDatabase: () -> Unit,
-    onPurchase: (Int) -> Unit
+    unlockablesList: List<Unlockable> = exampleUnlockables,
+    paddingValues: PaddingValues = PaddingValues(0.dp),
+    debugSeedDatabase: (List<Unlockable>) -> Unit = {},
+    debugClearDatabase: () -> Unit = {},
+    onPurchase: (Int) -> Unit = {}
 ) {
     ShinyBlackContainer {
         Column(
@@ -109,25 +128,7 @@ fun StoreBody(
             }
             Row {
                 Button(
-                    onClick = { debugSeedDatabase(
-                        listOf(
-                            Unlockable(
-                                name = "Amazing prize",
-                                cost = 25,
-                                purchased = false
-                            ),
-                            Unlockable(
-                                name = "Incredible prize",
-                                cost = 50,
-                                purchased = false
-                            ),
-                            Unlockable(
-                                name = "Mindblowing prize",
-                                cost = 100,
-                                purchased = false
-                            )
-                        )
-                    ) }
+                    onClick = { debugSeedDatabase(exampleUnlockables) }
                 ) {
                     Text(text = "Seed database")
                 }
@@ -135,15 +136,22 @@ fun StoreBody(
                     Text(text = "Clear database")
                 }
             }
-
         }
     }
 }
 
+
+/**
+ * Display for a single unlockable object in the store
+ *
+ * @param unlockable The unlockable to display
+ * @param onPurchase Callback for when the purchase button is pressed
+ */
+@Preview
 @Composable
 fun UnlockableObject(
-    unlockable: Unlockable,
-    onPurchase: (Int) -> Unit
+    unlockable: Unlockable = exampleUnlockables[0],
+    onPurchase: (Int) -> Unit = {}
 ) {
     MetallicContainer(height = 50f, rounding = 6.dp) {
         Column(
@@ -189,7 +197,25 @@ fun UnlockableObject(
                 }
             }
         }
-        
     }
-
 }
+
+
+// Example unlockables for testing
+val exampleUnlockables = listOf(
+    Unlockable(
+        name = "Amazing prize",
+        cost = 25,
+        purchased = false
+    ),
+    Unlockable(
+        name = "Incredible prize",
+        cost = 50,
+        purchased = false
+    ),
+    Unlockable(
+        name = "Mindblowing prize",
+        cost = 100,
+        purchased = false
+    )
+)

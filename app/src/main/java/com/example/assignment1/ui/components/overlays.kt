@@ -1,4 +1,4 @@
-package com.example.assignment1.ui.preset.timer
+package com.example.assignment1.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -22,13 +22,28 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.assignment1.utility.detectedActivityToString
+import com.example.assignment1.utility.sendFakeTransitionEvent
 import com.google.android.gms.location.DetectedActivity
 
+
+/**
+ * Overlay providing debug features for the application. Displays informmation
+ * about registered user activity and allows the user to send fake activity events
+ * as if they were coming from the Google Play Activity Detection API.
+ *
+ * @param debugInfo - map of debug information to be displayed
+ */
+@Preview
 @Composable
 fun DebugOverlay(
-    debugInfo: Map<String, Any>
+    debugInfo: Map<String, Any> = mapOf(
+        "Activity" to "Still",
+        "Confidence" to 100,
+        "Pomodoro" to 0)
 ) {
     val context = LocalContext.current
     var expanded by remember { mutableStateOf( false) }
@@ -82,13 +97,25 @@ fun DebugOverlay(
 }
 
 
+/**
+ * Overlay that displays a generic confirmation dialog. The content appears
+ * centered on the screen with a darkened background. The overlay is only displayed
+ * when the enabled parameter is true.
+ *
+ * @param enabled whether the overlay should be displayed
+ * @param onConfirmAction action to be performed when the user confirms
+ * @param onReject action to be performed when the user rejects
+ * @param onDisableWarning action to be performed when the user disables the warning
+ * @param message content to be displayed on the overlay. Should give the user information about what they are confirming
+ */
+@Preview
 @Composable
 fun ConfirmationOverlay(
-    enabled: Boolean,
-    onConfirmAction: () -> Unit,
-    onReject: () -> Unit,
-    onDisableWarning: () -> Unit,
-    message: @Composable () -> Unit
+    enabled: Boolean = true,
+    onConfirmAction: () -> Unit = {},
+    onReject: () -> Unit = {},
+    onDisableWarning: () -> Unit = {},
+    message: @Composable () -> Unit = {Text("You're about to do something. Are you sure?")}
 ) {
     var isDisabled by remember { mutableStateOf(false) }
     var disableWarningsChecked by remember { mutableStateOf(false) }

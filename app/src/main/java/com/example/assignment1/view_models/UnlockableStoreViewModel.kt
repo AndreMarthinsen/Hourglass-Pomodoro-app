@@ -1,4 +1,4 @@
-package com.example.assignment1.ui.unlockables
+package com.example.assignment1.view_models
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

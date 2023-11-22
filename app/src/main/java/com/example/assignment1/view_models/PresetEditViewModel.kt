@@ -1,4 +1,4 @@
-package com.example.assignment1.ui.preset
+package com.example.assignment1.view_models
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.assignment1.data.preset.Preset
 import com.example.assignment1.data.preset.PresetRepository
+import com.example.assignment1.ui.screens.PresetEditDestination
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -79,7 +80,6 @@ data class PresetDetails(
     val totalLength: String = ""
 )
 
-//TODO: check if explicitly initializing fields is necessary, error handling for non-int values
 fun PresetDetails.toPreset() : Preset = Preset(
     id = id,
     name = name,

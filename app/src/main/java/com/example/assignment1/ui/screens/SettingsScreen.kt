@@ -1,4 +1,4 @@
-package com.example.assignment1.ui.settings
+package com.example.assignment1.ui.screens
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -21,25 +21,39 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.assignment1.PomodoroTopAppBar
+import com.example.assignment1.ui.components.PomodoroTopAppBar
 import com.example.assignment1.R
 import com.example.assignment1.data.Settings
-import com.example.assignment1.ui.AppViewModelProvider
+import com.example.assignment1.utility.AppViewModelProvider
 import com.example.assignment1.ui.navigation.NavigationDestination
-import com.example.assignment1.ui.visuals.MetallicContainer
-import com.example.assignment1.ui.visuals.ShinyBlackContainer
+import com.example.assignment1.ui.components.MetallicContainer
+import com.example.assignment1.ui.components.ShinyBlackContainer
+import com.example.assignment1.view_models.SettingsViewModel
 import kotlinx.coroutines.launch
 
+/**
+ * Route for the settings screen
+ */
 object SettingsDestination : NavigationDestination{
     override val route = "settings"
     override val titleRes = 4
 }
 
+
+/**
+ * Screen for the settings of the app
+ *
+ * @param navigateBack Callback for when the back button is pressed
+ * @param modifier Modifier for the screen
+ * @param navController Navigation controller for the screen
+ * @param viewModel The view model for the settings screen
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
@@ -72,7 +86,13 @@ fun SettingsScreen(
 }
 
 
-
+/**
+ * Body of the settings screen
+ *
+ * @param modifier Modifier for the body
+ * @param paddingValues Padding values for the body
+ * @param viewModel The view model for the settings screen
+ */
 @Composable
 fun SettingsBody(
     modifier: Modifier,
@@ -97,12 +117,23 @@ fun SettingsBody(
 }
 
 
+/**
+ * A frame for a setting displaying a checkbox to toggle the setting,
+ * the name of the setting along with an info icon allowing the expansion
+ * of a detailed description.
+ *
+ * @param enabled Whether the setting is enabled
+ * @param name The name of the setting
+ * @param description The description of the setting
+ * @param onToggle Callback for when the setting is toggled
+ */
+@Preview
 @Composable
 fun SettingFrame(
-    enabled: Boolean,
-    name: String,
-    description: String,
-    onToggle: (Boolean) -> Unit
+    enabled: Boolean = true,
+    name: String = "Setting",
+    description: String = "This is a setting",
+    onToggle: (Boolean) -> Unit = {}
 ) {
     var descriptionExpanded by remember { mutableStateOf(false) }
     MetallicContainer(height = 100f, rounding = 6.dp) {

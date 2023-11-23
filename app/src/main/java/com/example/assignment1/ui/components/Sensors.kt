@@ -31,10 +31,10 @@ import androidx.compose.ui.platform.LocalContext
 fun GravityWrapper() {
     val sensorStatus = remember { mutableStateOf(FloatArray(3) { 0f }) }
     val gravityEventListener = object : SensorEventListener {
-        // Callback for accuracy change, does nothing;
+        // Callback for accuracy change, does nothing:
         override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {}
 
-        // Callback for sensor value change, stores values
+        // Callback for sensor value change, stores values:
         override fun onSensorChanged(event: SensorEvent) {
 
             if (event.sensor.type == Sensor.TYPE_GRAVITY) {
@@ -53,6 +53,8 @@ fun GravityWrapper() {
 
 /**
  * GravitySensor shows the raw accelerometer data. Sensing can be turned on or off using buttons.
+ * @param gravityEventListener - event listener for sensor changes
+ * @param sensorStatus - measured sensor values from accelerometer
  */
 @Composable
 fun GravitySensor(
@@ -66,12 +68,8 @@ fun GravitySensor(
     val sensorManager: SensorManager = ctx.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     val gravitySensor: Sensor? = sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY)
 
-
-
-
     // Counting number of recompositions, for debugging:
     totalRecomposes.value = 1 + totalRecomposes.value
-
 
     Column {
         Text(

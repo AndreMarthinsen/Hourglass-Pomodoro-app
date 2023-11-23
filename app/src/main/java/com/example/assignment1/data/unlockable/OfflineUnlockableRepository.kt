@@ -2,6 +2,12 @@ package com.example.assignment1.data.unlockable
 
 import kotlinx.coroutines.flow.Flow
 
+/**
+ * The implementation of the UnlockableRepository-interface
+ * Functions point to unlockableDao-implementations
+ *
+ * @param unlockableDataAccessObject - DAO that describes database-interaction
+ */
 class OfflineUnlockableRepository(
     private val unlockableDataAccessObject: UnlockableDataAccessObject) : UnlockableRepository
 {

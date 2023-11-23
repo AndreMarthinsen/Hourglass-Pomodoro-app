@@ -18,7 +18,8 @@ interface AppContainer {
 }
 
 /**
- * [AppContainer] implementation that provides instance of [PresetRepository]
+ * [AppContainer] implementation that provides instance of [PresetRepository],
+ * [UnlockableRepository], [SettingsRepository]
  */
 class AppDataContainer(private val context: Context) : AppContainer {
 

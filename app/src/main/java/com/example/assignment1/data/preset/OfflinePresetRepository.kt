@@ -4,7 +4,7 @@ import kotlinx.coroutines.flow.Flow
 
 /**
  * The implementation of the PresetRepository-interface
- * Function point to presetDao-implementations
+ * Functions point to presetDao-implementations
  *
  * @param presetDataAccessObject - DAO that describes database-interaction
  */

@@ -8,6 +8,11 @@ import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
+/**
+ * The Database Access Object that defines interaction with the unlockable-database
+ * insert, update and delete are built-in functions
+ * getAllUnlockables and getUnlockable run manually defined SQL-queries
+ */
 @Dao
 interface UnlockableDataAccessObject {
     @Insert(onConflict = OnConflictStrategy.IGNORE)

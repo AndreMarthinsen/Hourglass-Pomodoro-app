@@ -17,7 +17,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 
 
+/**
+ * This code was used for testing out reading values in real time from the accelerometer at an
+ * early stage of the implementation phase.
+ * We later discovered the Activity Recognition Transition API, and considered it to
+ * be a more complete solution. This code is therefore not used in the app, but we include it
+ * to show the the concept.
+ */
 
+
+/**
+ * GravityWrapper prevents recomposition at every sensor data update.
+ */
 @Composable
 fun GravityWrapper() {
     val sensorStatus = remember { mutableStateOf(FloatArray(3) { 0f }) }
@@ -25,38 +36,32 @@ fun GravityWrapper() {
         // Callback for accuracy change, does nothing;
         override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {}
 
-        // Callback for sensor value change, prints values
+        // Callback for sensor value change, stores values
         override fun onSensorChanged(event: SensorEvent) {
 
             if (event.sensor.type == Sensor.TYPE_GRAVITY) {
-                // @TODO store fewer value changes ?
-                //if (abs(sensorStatus.value[0] - lastSensorStatus.value[0]) > 0.00002f) {
 
-                //lastSensorStatus.value = sensorStatus.value
                 sensorStatus.value = event.values
             }
 
-            //}
-
-            //    sensorStatus.value = event.values
-
-            //println("hello, sensor value changed")
-            //println(event.values)
         }
     }
+    // Register event listener:
     GravitySensor(
         gravityEventListener = gravityEventListener,
         sensorStatus = sensorStatus
     )
 }
+
+/**
+ * GravitySensor shows the raw accelerometer data. Sensing can be turned on or off using buttons.
+ */
 @Composable
 fun GravitySensor(
     gravityEventListener: SensorEventListener,
     sensorStatus: MutableState<FloatArray>
 ) {
-    // Sensor values:
 
-    var lastSensorStatus = remember { mutableStateOf(FloatArray(3){1f}) }
     var totalRecomposes = remember {mutableStateOf(0)}
 
     val ctx = LocalContext.current
@@ -64,10 +69,9 @@ fun GravitySensor(
     val gravitySensor: Sensor? = sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY)
     var buttonState = remember { mutableStateOf( false) }
 
-    var registeredCallback by remember { mutableStateOf(false)}
 
 
-
+    // Counting number of recompositions, for debugging:
     totalRecomposes.value = 1 + totalRecomposes.value;
 
 
@@ -75,7 +79,6 @@ fun GravitySensor(
         Text(
             text = "Total recomposes ${totalRecomposes.value}"
         )
-
 
         // Activate sensing:
         Button(
@@ -94,8 +97,6 @@ fun GravitySensor(
                 sensorManager.unregisterListener(gravityEventListener)
             }
         ) { Text("OFF") }
-
-        // Register event listener:
 
         // Print values:
         for (v in sensorStatus.value) {

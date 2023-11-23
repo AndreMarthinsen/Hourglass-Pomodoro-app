@@ -10,10 +10,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 
 
@@ -67,12 +65,12 @@ fun GravitySensor(
     val ctx = LocalContext.current
     val sensorManager: SensorManager = ctx.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     val gravitySensor: Sensor? = sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY)
-    var buttonState = remember { mutableStateOf( false) }
+
 
 
 
     // Counting number of recompositions, for debugging:
-    totalRecomposes.value = 1 + totalRecomposes.value;
+    totalRecomposes.value = 1 + totalRecomposes.value
 
 
     Column {
@@ -104,6 +102,6 @@ fun GravitySensor(
                 text = v.toString()
             )
         }
-        Text(buttonState.value.toString())
+
     }
 }
